@@ -1,0 +1,14 @@
+{
+    "vulnerabilityAlerts": {
+        "labels": [
+            "security"
+        ]
+    },
+    "stabilityDays": 3,
+    "prConcurrentLimit": 10,
+    "prHourlyLimit": 10,
+    "postUpdateOptions": [
+        "gomodUpdateImportPaths",
+        "gomodTidy"
+    ]
+}

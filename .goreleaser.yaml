@@ -1,0 +1,115 @@
+project_name: renovate-metrics
+
+builds:
+- id: cli
+  main: ./cmd/
+  binary: renovate-metrics
+  goos:
+  - linux
+  - darwin
+  - windows    
+  env:
+  - CGO_ENABLED=0
+
+archives:
+- id: cli
+  name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+  builds:
+  - cli
+
+checksum:
+  name_template: 'checksums.txt'
+
+source:
+  enabled: true
+  name_template: "{{ .ProjectName }}_{{ .Version }}_source_code"
+
+changelog:
+  use: github-native
+
+sboms:
+- id: source
+  artifacts: source
+  documents:
+  - "{{ .ProjectName }}_{{ .Version }}_sbom.spdx.json"
+
+dockers:
+- image_templates:
+  - ghcr.io/raffis/{{ .ProjectName }}:v{{ .Version }}-amd64
+  dockerfile: Dockerfile.release
+  use: buildx
+  ids:
+  - cli
+  build_flag_templates:
+  - --platform=linux/amd64
+  - --label=org.opencontainers.image.title={{ .ProjectName }}
+  - --label=org.opencontainers.image.description={{ .ProjectName }}
+  - --label=org.opencontainers.image.url=https://github.com/raffis/{{ .ProjectName }}
+  - --label=org.opencontainers.image.source=https://github.com/raffis/{{ .ProjectName }}
+  - --label=org.opencontainers.image.version={{ .Version }}
+  - --label=org.opencontainers.image.created={{ time "2006-01-02T15:04:05Z07:00" }}
+  - --label=org.opencontainers.image.revision={{ .FullCommit }}
+  - --label=org.opencontainers.image.licenses=Apache-2.0
+- image_templates: 
+  - "ghcr.io/raffis/{{ .ProjectName }}:v{{ .Version }}-arm64v8"
+  goarch: arm64
+  dockerfile: Dockerfile.release
+  use: buildx
+  ids:
+  - cli
+  build_flag_templates:
+  - --platform=linux/arm64/v8
+  - --label=org.opencontainers.image.title={{ .ProjectName }}
+  - --label=org.opencontainers.image.description={{ .ProjectName }}
+  - --label=org.opencontainers.image.url=https://github.com/raffis/{{ .ProjectName }}
+  - --label=org.opencontainers.image.source=https://github.com/raffis/{{ .ProjectName }}
+  - --label=org.opencontainers.image.version={{ .Version }}
+  - --label=org.opencontainers.image.created={{ time "2006-01-02T15:04:05Z07:00" }}
+  - --label=org.opencontainers.image.revision={{ .FullCommit }}
+  - --label=org.opencontainers.image.licenses=Apache-2.0
+
+docker_manifests:
+- name_template: ghcr.io/raffis/{{ .ProjectName }}:v{{ .Version }}
+  image_templates:
+  - ghcr.io/raffis/{{ .ProjectName }}:v{{ .Version }}-amd64
+  - ghcr.io/raffis/{{ .ProjectName }}:v{{ .Version }}-arm64v8
+- name_template: ghcr.io/raffis/{{ .ProjectName }}:latest
+  image_templates:
+  - ghcr.io/raffis/{{ .ProjectName }}:v{{ .Version }}-amd64
+  - ghcr.io/raffis/{{ .ProjectName }}:v{{ .Version }}-arm64v8
+
+brews:
+- ids:
+  - cli
+  tap:
+    owner: raffis
+    name: renovate-metrics
+    token: "{{ .Env.REPO_TOKEN }}"
+  description:  Parse renovate logs into prometheus metrics
+  homepage: https://github.com/raffis/{{ .ProjectName }}
+  folder: Formula
+  test: |
+    system "#{bin}/renovate-metrics -h"      
+
+signs:
+- cmd: cosign
+  certificate: "${artifact}.pem"
+  env:
+  - COSIGN_EXPERIMENTAL=1
+  args:
+  - sign-blob
+  - "--output-certificate=${certificate}"
+  - "--output-signature=${signature}"
+  - "${artifact}"
+  artifacts: checksum
+  output: true
+
+docker_signs:
+  - cmd: cosign
+    env:
+    - COSIGN_EXPERIMENTAL=1
+    artifacts: images
+    output: true
+    args:
+    - 'sign'
+    - '${artifact}'
