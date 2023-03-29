@@ -4,52 +4,64 @@ import (
 	"bufio"
 	"encoding/json"
 	"io"
+
+	"github.com/go-logr/logr"
 )
 
 type parser struct {
-	r      io.Reader
-	groups map[string]*collector
+	opts         ParserOptions
+	r            io.Reader
+	repositories map[string]*repository
 }
 
-func NewParser(r io.Reader) *parser {
+type ParserOptions struct {
+	BufferSize int
+	Logger     logr.Logger
+}
+
+func NewParser(r io.Reader, opts ParserOptions) *parser {
 	return &parser{
-		r:      r,
-		groups: make(map[string]*collector),
+		opts:         opts,
+		r:            r,
+		repositories: make(map[string]*repository),
 	}
 }
 
-type Group struct {
-	*collector
-	Repository string
+type Repository struct {
+	*repository
+	Name string
 }
 
-func (p *parser) Parse() (map[string]*collector, error) {
+func (p *parser) Parse() (map[string]*repository, error) {
 	scanner := bufio.NewScanner(p.r)
 
 	var b []byte
-	scanner.Buffer(b, 1000000)
+	scanner.Buffer(b, p.opts.BufferSize)
 	for scanner.Scan() {
 		var line logLine
 		err := json.Unmarshal(scanner.Bytes(), &line)
-		if err == nil && line.Config != nil {
-			group := p.group(line.Repository)
-			group.Parse(line)
+		if err == nil {
+			if line.Repository == "" {
+				continue
+			}
 
+			repository := p.repository(line.Repository)
+			if err := repository.Parse(line); err != nil {
+				p.opts.Logger.V(1).Info("failed to parse line", "error", err)
+			}
+		} else {
+			p.opts.Logger.V(1).Info("failed to decode json line", "error", err)
 		}
-
-		/*if err != nil {
-			fmt.Printf("error: %#v -- %#v\n", line.Config, err)
-		}*/
 	}
 
-	return p.groups, scanner.Err()
+	return p.repositories, scanner.Err()
 }
 
-func (p *parser) group(repository string) *collector {
-	if collector, has := p.groups[repository]; has {
+func (p *parser) repository(repository string) *repository {
+	if collector, has := p.repositories[repository]; has {
 		return collector
 	}
 
-	p.groups[repository] = NewCollector()
-	return p.groups[repository]
+	p.repositories[repository] = NewRepository()
+	return p.repositories[repository]
 }

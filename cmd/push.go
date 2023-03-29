@@ -1,8 +1,10 @@
 package main
 
 import (
+	"log"
 	"os"
 
+	"github.com/go-logr/stdr"
 	"github.com/prometheus/client_golang/prometheus/push"
 	"github.com/raffis/renovate-metrics/pkg/parser"
 	"github.com/spf13/cobra"
@@ -10,7 +12,13 @@ import (
 
 var (
 	prometheusArg = "http://localhost:9091"
+	bufferSize    = 10485760
+	logLevel      = 0
 )
+
+func newStdLogger(flags int) stdr.StdLogger {
+	return log.New(os.Stdout, "", flags)
+}
 
 func init() {
 	pushCmd := &cobra.Command{
@@ -30,7 +38,14 @@ func init() {
 				file = f
 			}
 
-			parser := parser.NewParser(file)
+			log := stdr.New(newStdLogger(log.Lshortfile))
+			stdr.SetVerbosity(logLevel)
+
+			parser := parser.NewParser(file, parser.ParserOptions{
+				BufferSize: bufferSize,
+				Logger:     log,
+			})
+
 			collectors, err := parser.Parse()
 			if err != nil {
 				return err
@@ -55,5 +70,7 @@ func init() {
 	}
 
 	pushCmd.Flags().StringVarP(&prometheusArg, "prometheus", "", prometheusArg, "Prometheus push gateway URL")
+	pushCmd.Flags().IntVarP(&bufferSize, "buffer-size", "", bufferSize, "Buffer size while parsing input")
+	pushCmd.Flags().IntVarP(&logLevel, "log-level", "", logLevel, "Log Level (Default is 0 which is no logging)")
 	rootCmd.AddCommand(pushCmd)
 }

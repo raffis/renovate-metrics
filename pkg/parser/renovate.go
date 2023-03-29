@@ -5,7 +5,9 @@ type logLine struct {
 	Hostname          string                          `json:"hostname,omitempty"`
 	PID               int                             `json:"pd,omitempty"`
 	Level             int                             `json:"level,omitempty"`
+	Message           string                          `json:"msg,omitempty"`
 	LogContext        string                          `json:"logContext,omitempty"`
+	Time              string                          `json:"time,omitempty"`
 	Repository        string                          `json:"repository,omitempty"`
 	BaseBranch        string                          `json:"baseBranch,omitempty"`
 	Config            *map[string][]packageDependency `json:"config,omitempty"`

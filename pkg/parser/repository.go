@@ -3,15 +3,17 @@ package parser
 import (
 	"regexp"
 	"strconv"
+	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
 )
 
-type collector struct {
-	dependencyMetric       *prometheus.GaugeVec
-	dependencyUpdateMetric *prometheus.GaugeVec
-	packageDefinitions     map[packageDefinition]prometheus.Gauge
-	packageUpdates         map[packageUpdate]prometheus.Gauge
+type repository struct {
+	dependencyMetric        *prometheus.GaugeVec
+	dependencyUpdateMetric  *prometheus.GaugeVec
+	lastSuccessfulRunMetric prometheus.Gauge
+	packageDefinitions      map[packageDefinition]prometheus.Gauge
+	packageUpdates          map[packageUpdate]prometheus.Gauge
 }
 
 type packageDefinition struct {
@@ -27,15 +29,7 @@ type packageUpdate struct {
 	vulnerabilityUpdate bool
 }
 
-/*type vulnerabilitity struct {
-	DependencyName string
-	CurrentVersion string
-	PackageFile    string
-	Manager        string
-	NewVersion     string
-}*/
-
-func NewCollector() *collector {
+func NewRepository() *repository {
 	dependencyMetric := prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "renovate_dependency",
 		Help: "Installed dependency",
@@ -44,21 +38,29 @@ func NewCollector() *collector {
 	dependencyUpdateMetric := prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "renovate_dependency_update",
 		Help: "Available update of an installed dependency",
-	}, []string{"manager", "packageFile", "depName", "currentVersion", "updateType", "newVersion", "vulnerabilityFix"})
+	}, []string{"manager", "packageFile", "depName", "currentVersion", "updateType", "newVersion", "vulnerabilityFix", "releaseTimestamp"})
 
-	return &collector{
-		dependencyMetric:       dependencyMetric,
-		dependencyUpdateMetric: dependencyUpdateMetric,
-		packageDefinitions:     make(map[packageDefinition]prometheus.Gauge),
-		packageUpdates:         make(map[packageUpdate]prometheus.Gauge),
+	lastSuccessfulRunMetric := prometheus.NewGauge(prometheus.GaugeOpts{
+		Name: "renovate_last_successful_timestamp",
+		Help: "Timestamp of the last successful execution",
+	})
+
+	return &repository{
+		dependencyMetric:        dependencyMetric,
+		dependencyUpdateMetric:  dependencyUpdateMetric,
+		lastSuccessfulRunMetric: lastSuccessfulRunMetric,
+		packageDefinitions:      make(map[packageDefinition]prometheus.Gauge),
+		packageUpdates:          make(map[packageUpdate]prometheus.Gauge),
 	}
 }
 
-func (p *collector) Describe(ch chan<- *prometheus.Desc) {
+func (p *repository) Describe(ch chan<- *prometheus.Desc) {
 	prometheus.DescribeByCollect(p, ch)
 }
 
-func (p *collector) Collect(ch chan<- prometheus.Metric) {
+func (p *repository) Collect(ch chan<- prometheus.Metric) {
+	ch <- p.lastSuccessfulRunMetric
+
 	for _, m := range p.packageDefinitions {
 		ch <- m
 	}
@@ -68,7 +70,7 @@ func (p *collector) Collect(ch chan<- prometheus.Metric) {
 	}
 }
 
-func (p *collector) packageDefinition(metric *prometheus.GaugeVec, definition packageDefinition) prometheus.Gauge {
+func (p *repository) packageDefinition(metric *prometheus.GaugeVec, definition packageDefinition) prometheus.Gauge {
 	if m, has := p.packageDefinitions[definition]; has {
 		m.Inc()
 		return m
@@ -87,13 +89,17 @@ func (p *collector) packageDefinition(metric *prometheus.GaugeVec, definition pa
 	return m
 }
 
-func (p *collector) packageUpdate(metric *prometheus.GaugeVec, update packageUpdate) prometheus.Gauge {
+func (p *repository) packageUpdate(metric *prometheus.GaugeVec, update packageUpdate) prometheus.Gauge {
 	if m, has := p.packageUpdates[update]; has {
 		m.Inc()
 		return m
 	}
 
 	isVulnerabilityUpdate, _ := regexp.MatchString(`-vulnerability$`, update.BranchName)
+	ts, err := time.Parse(time.RFC3339, update.ReleaseTimestamp)
+	if err != nil {
+		ts = time.Unix(0, 0)
+	}
 
 	m := metric.With(prometheus.Labels{
 		"manager":          update.Manager,
@@ -103,8 +109,7 @@ func (p *collector) packageUpdate(metric *prometheus.GaugeVec, update packageUpd
 		"updateType":       update.UpdateType,
 		"newVersion":       update.NewVersion,
 		"vulnerabilityFix": strconv.FormatBool(isVulnerabilityUpdate),
-		//"releaseTimestamp":"2023-03-24T05:34:48.000Z",
-
+		"releaseTimestamp": strconv.FormatInt(ts.Unix(), 10),
 	})
 
 	m.Set(1)
@@ -113,31 +118,9 @@ func (p *collector) packageUpdate(metric *prometheus.GaugeVec, update packageUpd
 	return m
 }
 
-/*func (p *collector) vulnerability(metric *prometheus.GaugeVec, update packageUpdate) prometheus.Gauge {
-	if m, has := p.packageUpdates[update]; has {
-		m.Inc()
-		return m
-	}
-
-	m := metric.With(prometheus.Labels{
-		"manager":        update.Manager,
-		"packageFile":    update.PackageFile,
-		"depName":        update.DependencyName,
-		"currentVersion": update.CurrentVersion,
-		"updateType":     update.UpdateType,
-		"newVersion":     update.NewVersion,
-		//"releaseTimestamp":"2023-03-24T05:34:48.000Z",
-
-	})
-
-	m.Set(1)
-	p.packageUpdates[update] = m
-
-	return m
-}*/
-
-func (p *collector) Parse(line logLine) error {
-	if line.Config != nil {
+func (p *repository) Parse(line logLine) error {
+	switch {
+	case line.Config != nil:
 		for manager, files := range *line.Config {
 			for _, packageDependency := range files {
 				for _, dep := range packageDependency.Deps {
@@ -162,23 +145,15 @@ func (p *collector) Parse(line logLine) error {
 				}
 			}
 		}
-	}
-	/*
-		for _, rule := range line.AlertPackageRules {
-			for _, packageFile := range rule.MatchFiles {
-				for _, manager := range rule.MatchDatasources {
-					for _, packageName := range rule.MatchPackageNames {
-						p.vulnerability(p.dependencyVulnerabvilityMetric, vulnerabilitity{
-							DependencyName: dep.DepName,
-							CurrentVersion: dep.CurrentValue,
-							Manager:        manager,
-							PackageFile:    packageDependency.PackageFile,
-						})
-					}
-				}
-			}
+	case line.Message == "Repository finished":
+		ts, err := time.Parse(time.RFC3339, line.Time)
 
+		if err != nil {
+			return err
 		}
-	*/
+
+		p.lastSuccessfulRunMetric.Set(float64(ts.Unix()))
+	}
+
 	return nil
 }

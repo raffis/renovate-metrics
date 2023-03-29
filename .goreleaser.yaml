@@ -78,19 +78,6 @@ docker_manifests:
   - ghcr.io/raffis/{{ .ProjectName }}:v{{ .Version }}-amd64
   - ghcr.io/raffis/{{ .ProjectName }}:v{{ .Version }}-arm64v8
 
-brews:
-- ids:
-  - cli
-  tap:
-    owner: raffis
-    name: renovate-metrics
-    token: "{{ .Env.REPO_TOKEN }}"
-  description:  Parse renovate logs into prometheus metrics
-  homepage: https://github.com/raffis/{{ .ProjectName }}
-  folder: Formula
-  test: |
-    system "#{bin}/renovate-metrics -h"      
-
 signs:
 - cmd: cosign
   certificate: "${artifact}.pem"
