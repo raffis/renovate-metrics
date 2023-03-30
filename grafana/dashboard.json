@@ -978,7 +978,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "sum(renovate_dependency{repository!=\"\", repository=~\"$repository\", manager=~\"$manager\", depName=~\"$depName\", currentVersion=~\"$currentVersion\", vulnerabilityFix=~\"$vulnerabilityFix\"}) by (manager, repository, depName, currentVersion, packageFile)",
+          "expr": "sum(renovate_dependency{repository!=\"\", repository=~\"$repository\", manager=~\"$manager\", depName=~\"$depName\", currentVersion=~\"$currentVersion\"}) by (manager, repository, depName, currentVersion, packageFile)",
           "format": "table",
           "instant": true,
           "interval": "",
