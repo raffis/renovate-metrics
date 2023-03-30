@@ -32,9 +32,9 @@ prometheus compatible metrics and pushes them to a prometheus push gateway.
 
 Important renovate needs to be started with `LOG_LEVEL=debug` as well as `LOG_FORMAT=json` otherwise `renovate-metrics` is unable to get all information required.
 
-Example execution (It also goes through a tee pipe to get the renovate output to stdout as well):
+Example execution (It also goes through a tee pipe to get the renovate output to stderr as well):
 ```sh
-docker run -e RENOVATE_TOKEN=$GITHUB_TOKEN -e LOG_FORMAT=json -e LOG_LEVEL=debug renovate/renovate:slim org/my-repository | tee /dev/tty | docker run -i raffis/renovate-metrics:latest push --prometheus=http:/prometheus-push-gateway:9091
+docker run -e RENOVATE_TOKEN=$GITHUB_TOKEN -e LOG_FORMAT=json -e LOG_LEVEL=debug renovate/renovate:slim org/my-repository | tee /dev/stderr | docker run -i ghcr.io/raffis/renovate-metrics:latest push --prometheus=http:/prometheus-push-gateway:9091
 ```
 
 ### Grafana dashboard
