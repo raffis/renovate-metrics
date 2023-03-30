@@ -17,13 +17,13 @@ This is possible if renovate runs in self-hosted environments.
 ### Metrics
 
 * Installed dependency \
-`renovate_dependency` labels: "manager", "packageFile", "depName", "currentVersion"
+`renovate_dependency` labels: "repository", "manager", "packageFile", "depName", "currentVersion"
    
 * Available update of an installed dependency \
-`renovate_dependency_update` labels: "manager", "packageFile", "depName", "currentVersion", "updateType", "newVersion", "vulnerabilityFix", "releaseTimestamp"
+`renovate_dependency_update` labels: "repository", "manager", "packageFile", "depName", "currentVersion", "updateType", "newVersion", "vulnerabilityFix", "releaseTimestamp"
    
 * Timestamp of the last successful execution \
-`renovate_last_successful_timestamp` labels: []
+`renovate_last_successful_timestamp` labels: "repository"
 
 ### Usage
 

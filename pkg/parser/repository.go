@@ -26,7 +26,6 @@ type packageDefinition struct {
 type packageUpdate struct {
 	packageDefinition
 	update
-	vulnerabilityUpdate bool
 }
 
 func NewRepository() *repository {

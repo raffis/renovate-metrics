@@ -4,12 +4,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const (
-	version = "0.0.0-dev"
-	commit  = "none"
-	date    = "unknown"
-)
-
 var (
 	rootCmd = &cobra.Command{
 		Use:           "renovate-metrics",
