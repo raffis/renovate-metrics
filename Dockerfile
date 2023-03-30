@@ -15,7 +15,7 @@ COPY pkg pkg
 # Build
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -o renovate-metrics cmd/*
 
-FROM alpine:3.16 as renovate-metrics
+FROM gcr.io/distroless/static:nonroot
 WORKDIR /
 COPY --from=builder /workspace/renovate-metrics /usr/bin/
 USER 65532:65532
