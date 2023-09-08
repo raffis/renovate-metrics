@@ -19,6 +19,7 @@ type repository struct {
 type packageDefinition struct {
 	DependencyName string
 	CurrentVersion string
+	DependencyType string
 	PackageFile    string
 	Manager        string
 }
@@ -32,12 +33,12 @@ func NewRepository() *repository {
 	dependencyMetric := prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "renovate_dependency",
 		Help: "Installed dependency",
-	}, []string{"manager", "packageFile", "depName", "currentVersion"})
+	}, []string{"manager", "packageFile", "depName", "depType", "currentVersion"})
 
 	dependencyUpdateMetric := prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "renovate_dependency_update",
 		Help: "Available update of an installed dependency",
-	}, []string{"manager", "packageFile", "depName", "currentVersion", "updateType", "newVersion", "vulnerabilityFix", "releaseTimestamp"})
+	}, []string{"manager", "packageFile", "depName", "depType", "currentVersion", "updateType", "newVersion", "vulnerabilityFix", "releaseTimestamp"})
 
 	lastSuccessfulRunMetric := prometheus.NewGauge(prometheus.GaugeOpts{
 		Name: "renovate_last_successful_timestamp",
@@ -79,6 +80,7 @@ func (p *repository) packageDefinition(metric *prometheus.GaugeVec, definition p
 		"manager":        definition.Manager,
 		"packageFile":    definition.PackageFile,
 		"depName":        definition.DependencyName,
+		"depType":        definition.DependencyType,
 		"currentVersion": definition.CurrentVersion,
 	})
 
@@ -105,6 +107,7 @@ func (p *repository) packageUpdate(metric *prometheus.GaugeVec, update packageUp
 		"packageFile":      update.PackageFile,
 		"depName":          update.DependencyName,
 		"currentVersion":   update.CurrentVersion,
+		"depType":          update.DependencyType,
 		"updateType":       update.UpdateType,
 		"newVersion":       update.NewVersion,
 		"vulnerabilityFix": strconv.FormatBool(isVulnerabilityUpdate),
@@ -126,6 +129,7 @@ func (p *repository) Parse(line logLine) error {
 					p.packageDefinition(p.dependencyMetric, packageDefinition{
 						DependencyName: dep.DepName,
 						CurrentVersion: dep.CurrentValue,
+						DependencyType: dep.DepType,
 						Manager:        manager,
 						PackageFile:    packageDependency.PackageFile,
 					})
@@ -134,6 +138,7 @@ func (p *repository) Parse(line logLine) error {
 						p.packageUpdate(p.dependencyUpdateMetric, packageUpdate{
 							packageDefinition: packageDefinition{
 								DependencyName: dep.DepName,
+								DependencyType: dep.DepType,
 								CurrentVersion: dep.CurrentValue,
 								Manager:        manager,
 								PackageFile:    packageDependency.PackageFile,
