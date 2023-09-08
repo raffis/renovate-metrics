@@ -88,6 +88,7 @@ signs:
   - "--output-certificate=${certificate}"
   - "--output-signature=${signature}"
   - "${artifact}"
+  - --yes
   artifacts: checksum
   output: true
 
@@ -95,8 +96,9 @@ docker_signs:
   - cmd: cosign
     env:
     - COSIGN_EXPERIMENTAL=1
-    artifacts: images
+    artifacts: all
     output: true
     args:
     - 'sign'
     - '${artifact}'
+    - --yes
