@@ -53,8 +53,7 @@ func init() {
 
 			client := push.New(prometheusArg, "renovate")
 
-			for repository, collector := range collectors {
-				client.Grouping("repository", repository)
+			for _, collector := range collectors {
 
 				if err := client.Delete(); err != nil {
 					return err

@@ -3,7 +3,7 @@ package parser
 type logLine struct {
 	Name              string                          `json:"name,omitempty"`
 	Hostname          string                          `json:"hostname,omitempty"`
-	PID               int                             `json:"pd,omitempty"`
+	PID               int                             `json:"pid,omitempty"`
 	Level             int                             `json:"level,omitempty"`
 	Message           string                          `json:"msg,omitempty"`
 	LogContext        string                          `json:"logContext,omitempty"`

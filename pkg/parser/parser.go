@@ -50,7 +50,7 @@ func (p *parser) Parse() (map[string]*repository, error) {
 				p.opts.Logger.V(1).Info("failed to parse line", "error", err)
 			}
 		} else {
-			p.opts.Logger.V(1).Info("failed to decode json line", "error", err)
+			p.opts.Logger.V(1).Info("failed to decode json line", "error", err, "line", line)
 		}
 	}
 
@@ -62,6 +62,6 @@ func (p *parser) repository(repository string) *repository {
 		return collector
 	}
 
-	p.repositories[repository] = NewRepository()
+	p.repositories[repository] = NewRepository(repository)
 	return p.repositories[repository]
 }

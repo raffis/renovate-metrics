@@ -17,6 +17,7 @@ type repository struct {
 }
 
 type packageDefinition struct {
+	Repository     string
 	DependencyName string
 	CurrentVersion string
 	DependencyType string
@@ -29,20 +30,32 @@ type packageUpdate struct {
 	update
 }
 
-func NewRepository() *repository {
+func NewRepository(repo string) *repository {
 	dependencyMetric := prometheus.NewGaugeVec(prometheus.GaugeOpts{
-		Name: "renovate_dependency",
-		Help: "Installed dependency",
+		Namespace: "renovate",
+		Name:      "dependency",
+		Help:      "Installed dependency",
+		ConstLabels: prometheus.Labels{
+			"repository": repo,
+		},
 	}, []string{"manager", "packageFile", "depName", "depType", "currentVersion"})
 
 	dependencyUpdateMetric := prometheus.NewGaugeVec(prometheus.GaugeOpts{
-		Name: "renovate_dependency_update",
-		Help: "Available update of an installed dependency",
+		Namespace: "renovate",
+		Name:      "dependency_update",
+		Help:      "Available update of an installed dependency",
+		ConstLabels: prometheus.Labels{
+			"repository": repo,
+		},
 	}, []string{"manager", "packageFile", "depName", "depType", "currentVersion", "updateType", "newVersion", "vulnerabilityFix", "releaseTimestamp"})
 
 	lastSuccessfulRunMetric := prometheus.NewGauge(prometheus.GaugeOpts{
-		Name: "renovate_last_successful_timestamp",
-		Help: "Timestamp of the last successful execution",
+		Namespace: "renovate",
+		Name:      "last_successful_timestamp",
+		Help:      "Timestamp of the last successful execution",
+		ConstLabels: prometheus.Labels{
+			"repository": repo,
+		},
 	})
 
 	return &repository{
@@ -113,7 +126,6 @@ func (p *repository) packageUpdate(metric *prometheus.GaugeVec, update packageUp
 		"vulnerabilityFix": strconv.FormatBool(isVulnerabilityUpdate),
 		"releaseTimestamp": strconv.FormatInt(ts.Unix(), 10),
 	})
-
 	m.Set(1)
 	p.packageUpdates[update] = m
 
