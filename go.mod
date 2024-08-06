@@ -3,7 +3,7 @@ module github.com/raffis/renovate-metrics
 go 1.20
 
 require (
-	github.com/go-logr/logr v1.2.3
+	github.com/go-logr/logr v1.4.2
 	github.com/go-logr/stdr v1.2.2
 	github.com/prometheus/client_golang v1.19.1
 	github.com/spf13/cobra v1.6.1
