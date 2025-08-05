@@ -51,10 +51,10 @@ func init() {
 				return err
 			}
 
-			client := push.New(prometheusArg, "renovate")
-
 			for repository, collector := range collectors {
-				client.Grouping("r", repository)
+				// Note: Client can't be reused, as there is no way to unregister a Collector from a Pusher.
+				client := push.New(prometheusArg, "renovate")
+				client.Grouping("repository", repository)
 
 				if err := client.Delete(); err != nil {
 					return err
