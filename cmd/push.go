@@ -34,7 +34,7 @@ func init() {
 					return err
 				}
 
-				defer f.Close()
+				defer func() { _ = f.Close() }()
 				file = f
 			}
 
