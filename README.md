@@ -17,7 +17,7 @@ This is possible if renovate runs in self-hosted environments.
 ### Metrics
 
 * Installed dependency \
-`renovate_dependency` labels: "repository", "manager", "packageFile", "depName", "currentVersion"
+`renovate_dependency` labels: "repository", "manager", "packageFile", "depName", "currentVersion", "warning"
    
 * Available update of an installed dependency \
 `renovate_dependency_update` labels: "repository", "manager", "packageFile", "depName", "currentVersion", "updateType", "newVersion", "vulnerabilityFix", "releaseTimestamp"
@@ -34,7 +34,7 @@ Important renovate needs to be started with `LOG_LEVEL=debug` as well as `LOG_FO
 
 Example execution (It also goes through a tee pipe to get the renovate output to stderr as well):
 ```sh
-docker run -e RENOVATE_TOKEN=$GITHUB_TOKEN -e LOG_FORMAT=json -e LOG_LEVEL=debug renovate/renovate:slim org/my-repository | tee /dev/stderr | docker run -i ghcr.io/raffis/renovate-metrics:latest push --prometheus=http:/prometheus-push-gateway:9091
+docker run -e RENOVATE_TOKEN=$GITHUB_TOKEN -e LOG_FORMAT=json -e LOG_LEVEL=debug renovate/renovate:slim org/my-repository | tee /dev/stderr | docker run -i ghcr.io/raffis/renovate-metrics:latest push --prometheus=http://prometheus-push-gateway:9091
 ```
 
 ### Grafana dashboard
