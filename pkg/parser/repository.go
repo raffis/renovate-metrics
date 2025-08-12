@@ -17,12 +17,12 @@ type repository struct {
 }
 
 type packageDefinition struct {
-	Repository     string
 	DependencyName string
 	CurrentVersion string
 	DependencyType string
 	PackageFile    string
 	Manager        string
+	WarningMessage string
 }
 
 type packageUpdate struct {
@@ -35,7 +35,7 @@ func NewRepository(repo string) *repository {
 		Namespace: "renovate",
 		Name:      "dependency",
 		Help:      "Installed dependency",
-	}, []string{"manager", "packageFile", "depName", "depType", "currentVersion"})
+	}, []string{"manager", "packageFile", "depName", "depType", "currentVersion", "warning"})
 
 	dependencyUpdateMetric := prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Namespace: "renovate",
@@ -86,6 +86,7 @@ func (p *repository) packageDefinition(metric *prometheus.GaugeVec, definition p
 		"depName":        definition.DependencyName,
 		"depType":        definition.DependencyType,
 		"currentVersion": definition.CurrentVersion,
+		"warning":        definition.WarningMessage,
 	})
 
 	m.Set(1)
@@ -129,12 +130,20 @@ func (p *repository) Parse(line logLine) error {
 		for manager, files := range *line.Config {
 			for _, packageDependency := range files {
 				for _, dep := range packageDependency.Deps {
+					warningMessage := ""
+					for _, w := range dep.Warnings {
+						if w.Topic == dep.DepName {
+							warningMessage = w.Message
+							break
+						}
+					}
 					p.packageDefinition(p.dependencyMetric, packageDefinition{
 						DependencyName: dep.DepName,
 						CurrentVersion: dep.CurrentValue,
 						DependencyType: dep.DepType,
 						Manager:        manager,
 						PackageFile:    packageDependency.PackageFile,
+						WarningMessage: warningMessage,
 					})
 
 					for _, update := range dep.Updates {
