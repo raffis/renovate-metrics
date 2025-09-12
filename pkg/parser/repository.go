@@ -23,6 +23,7 @@ type packageDefinition struct {
 	PackageFile    string
 	Manager        string
 	WarningMessage string
+	BaseBranch     string
 }
 
 type packageUpdate struct {
@@ -35,13 +36,13 @@ func NewRepository(repo string) *repository {
 		Namespace: "renovate",
 		Name:      "dependency",
 		Help:      "Installed dependency",
-	}, []string{"manager", "packageFile", "depName", "depType", "currentVersion", "warning"})
+	}, []string{"manager", "packageFile", "depName", "depType", "currentVersion", "warning", "baseBranch"})
 
 	dependencyUpdateMetric := prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Namespace: "renovate",
 		Name:      "dependency_update",
 		Help:      "Available update of an installed dependency",
-	}, []string{"manager", "packageFile", "depName", "depType", "currentVersion", "updateType", "newVersion", "vulnerabilityFix", "releaseTimestamp"})
+	}, []string{"manager", "packageFile", "depName", "depType", "currentVersion", "updateType", "newVersion", "vulnerabilityFix", "releaseTimestamp", "baseBranch"})
 
 	lastSuccessfulRunMetric := prometheus.NewGauge(prometheus.GaugeOpts{
 		Namespace: "renovate",
@@ -87,6 +88,7 @@ func (p *repository) packageDefinition(metric *prometheus.GaugeVec, definition p
 		"depType":        definition.DependencyType,
 		"currentVersion": definition.CurrentVersion,
 		"warning":        definition.WarningMessage,
+		"baseBranch":     definition.BaseBranch,
 	})
 
 	m.Set(1)
@@ -117,6 +119,7 @@ func (p *repository) packageUpdate(metric *prometheus.GaugeVec, update packageUp
 		"newVersion":       update.NewVersion,
 		"vulnerabilityFix": strconv.FormatBool(isVulnerabilityUpdate),
 		"releaseTimestamp": strconv.FormatInt(ts.Unix(), 10),
+		"baseBranch":       update.BaseBranch,
 	})
 	m.Set(1)
 	p.packageUpdates[update] = m
@@ -144,6 +147,7 @@ func (p *repository) Parse(line logLine) error {
 						Manager:        manager,
 						PackageFile:    packageDependency.PackageFile,
 						WarningMessage: warningMessage,
+						BaseBranch:     line.BaseBranch,
 					})
 
 					for _, update := range dep.Updates {
@@ -154,6 +158,7 @@ func (p *repository) Parse(line logLine) error {
 								CurrentVersion: dep.CurrentValue,
 								Manager:        manager,
 								PackageFile:    packageDependency.PackageFile,
+								BaseBranch:     line.BaseBranch,
 							},
 							update: update,
 						})
