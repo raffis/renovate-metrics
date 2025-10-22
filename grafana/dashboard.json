@@ -24,9 +24,8 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 31561,
+  "id": 2,
   "links": [],
-  "liveNow": false,
   "panels": [
     {
       "collapsed": false,
@@ -52,12 +51,13 @@
             "mode": "thresholds"
           },
           "mappings": [],
+          "noValue": "0",
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
                 "color": "dark-blue",
-                "value": null
+                "value": 0
               }
             ]
           }
@@ -76,6 +76,7 @@
         "graphMode": "area",
         "justifyMode": "auto",
         "orientation": "auto",
+        "percentChangeColorMode": "standard",
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
@@ -83,9 +84,11 @@
           "fields": "",
           "values": false
         },
-        "textMode": "auto"
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
       },
-      "pluginVersion": "9.2.0",
+      "pluginVersion": "12.2.0",
       "targets": [
         {
           "datasource": {
@@ -113,12 +116,13 @@
             "mode": "thresholds"
           },
           "mappings": [],
+          "noValue": "0",
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
                 "color": "green",
-                "value": null
+                "value": 0
               },
               {
                 "color": "dark-red",
@@ -141,6 +145,7 @@
         "graphMode": "area",
         "justifyMode": "auto",
         "orientation": "auto",
+        "percentChangeColorMode": "standard",
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
@@ -148,9 +153,11 @@
           "fields": "",
           "values": false
         },
-        "textMode": "auto"
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
       },
-      "pluginVersion": "9.2.0",
+      "pluginVersion": "12.2.0",
       "targets": [
         {
           "datasource": {
@@ -178,12 +185,17 @@
             "mode": "thresholds"
           },
           "mappings": [],
+          "noValue": "0",
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "blue",
-                "value": null
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "dark-red",
+                "value": 1
               }
             ]
           }
@@ -196,12 +208,13 @@
         "x": 8,
         "y": 1
       },
-      "id": 10,
+      "id": 36,
       "options": {
-        "colorMode": "none",
+        "colorMode": "value",
         "graphMode": "area",
         "justifyMode": "auto",
         "orientation": "auto",
+        "percentChangeColorMode": "standard",
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
@@ -209,9 +222,75 @@
           "fields": "",
           "values": false
         },
-        "textMode": "auto"
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
       },
-      "pluginVersion": "9.2.0",
+      "pluginVersion": "12.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "sum(renovate_dependency{repository!=\"\", repository=~\"$repository\", manager=~\"$manager\", depName=~\"$depName\", currentVersion=~\"$currentVersion\", isAbandoned=\"true\"})",
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Abandoned dependencies",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": 0
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 4,
+        "x": 12,
+        "y": 1
+      },
+      "id": 10,
+      "options": {
+        "colorMode": "none",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.2.0",
       "targets": [
         {
           "datasource": {
@@ -245,7 +324,7 @@
             "steps": [
               {
                 "color": "green",
-                "value": null
+                "value": 0
               },
               {
                 "color": "#EAB839",
@@ -264,7 +343,7 @@
       "gridPos": {
         "h": 5,
         "w": 4,
-        "x": 12,
+        "x": 16,
         "y": 1
       },
       "id": 34,
@@ -273,6 +352,7 @@
         "graphMode": "area",
         "justifyMode": "auto",
         "orientation": "auto",
+        "percentChangeColorMode": "standard",
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
@@ -280,9 +360,11 @@
           "fields": "",
           "values": false
         },
-        "textMode": "auto"
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
       },
-      "pluginVersion": "9.2.0",
+      "pluginVersion": "12.2.0",
       "targets": [
         {
           "datasource": {
@@ -315,7 +397,7 @@
             "steps": [
               {
                 "color": "blue",
-                "value": null
+                "value": 0
               }
             ]
           }
@@ -325,7 +407,7 @@
       "gridPos": {
         "h": 5,
         "w": 4,
-        "x": 16,
+        "x": 20,
         "y": 1
       },
       "id": 24,
@@ -334,6 +416,7 @@
         "graphMode": "area",
         "justifyMode": "auto",
         "orientation": "auto",
+        "percentChangeColorMode": "standard",
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
@@ -341,9 +424,11 @@
           "fields": "",
           "values": false
         },
-        "textMode": "auto"
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
       },
-      "pluginVersion": "9.2.0",
+      "pluginVersion": "12.2.0",
       "targets": [
         {
           "datasource": {
@@ -418,12 +503,14 @@
           "fields": "",
           "values": false
         },
+        "sort": "desc",
         "tooltip": {
+          "hideZeros": false,
           "mode": "single",
           "sort": "none"
         }
       },
-      "pluginVersion": "9.2.0",
+      "pluginVersion": "12.2.0",
       "targets": [
         {
           "datasource": {
@@ -431,7 +518,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "sum(renovate_dependency{repository!=\"\", repository=~\"$repository\", manager=~\"$manager\", depName=~\"$depName\", currentVersion=~\"$currentVersion\"}) by (manager)",
+          "expr": "sum(renovate_dependency{repository!=\"\", repository=~\"$repository\", manager=~\"$manager\", depName=~\"$depName\", currentVersion=~\"$currentVersion\", isAbandoned=~\"$isAbandoned\"}) by (manager)",
           "legendFormat": "__auto",
           "range": true,
           "refId": "A"
@@ -485,12 +572,14 @@
           "fields": "",
           "values": false
         },
+        "sort": "desc",
         "tooltip": {
+          "hideZeros": false,
           "mode": "single",
           "sort": "none"
         }
       },
-      "pluginVersion": "9.2.0",
+      "pluginVersion": "12.2.0",
       "targets": [
         {
           "datasource": {
@@ -498,13 +587,154 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "sum(renovate_dependency{repository!=\"\", repository=~\"$repository\", manager=~\"$manager\", depName=~\"$depName\", currentVersion=~\"$currentVersion\"}) by (repository)",
+          "expr": "sum(renovate_dependency{repository!=\"\", repository=~\"$repository\", manager=~\"$manager\", depName=~\"$depName\", currentVersion=~\"$currentVersion\", isAbandoned=~\"$isAbandoned\"}) by (repository)",
           "legendFormat": "__auto",
           "range": true,
           "refId": "A"
         }
       ],
       "title": "Number of dependencies by repository",
+      "type": "piechart"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "mappings": []
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "false"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Maintained"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "green",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "true"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Abandoned"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "dark-red",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "/sum.*/"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Unknown"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#bbbbbb",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 7
+      },
+      "id": 37,
+      "options": {
+        "displayLabels": [],
+        "legend": {
+          "displayMode": "list",
+          "placement": "right",
+          "showLegend": true,
+          "values": [
+            "value"
+          ]
+        },
+        "pieType": "pie",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "sort": "desc",
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "sum(renovate_dependency{repository!=\"\", repository=~\"$repository\", manager=~\"$manager\", depName=~\"$depName\", currentVersion=~\"$currentVersion\"}) by (isAbandoned)",
+          "format": "time_series",
+          "instant": false,
+          "interval": "",
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Number of dependencies by abandonment status",
+      "transformations": [
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "(.*)",
+            "renamePattern": "$1"
+          }
+        }
+      ],
       "type": "piechart"
     },
     {
@@ -552,12 +782,14 @@
           "fields": "",
           "values": false
         },
+        "sort": "desc",
         "tooltip": {
+          "hideZeros": false,
           "mode": "single",
           "sort": "none"
         }
       },
-      "pluginVersion": "9.2.0",
+      "pluginVersion": "12.2.0",
       "targets": [
         {
           "datasource": {
@@ -565,7 +797,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "count(renovate_dependency{repository!=\"\", repository=~\"$repository\", manager=~\"$manager\", depName=~\"$depName\", currentVersion=~\"$currentVersion\"}) by (manager)",
+          "expr": "count(renovate_dependency{repository!=\"\", repository=~\"$repository\", manager=~\"$manager\", depName=~\"$depName\", currentVersion=~\"$currentVersion\", isAbandoned=~\"$isAbandoned\"}) by (manager)",
           "legendFormat": "__auto",
           "range": true,
           "refId": "A"
@@ -619,12 +851,14 @@
           "fields": "",
           "values": false
         },
+        "sort": "desc",
         "tooltip": {
+          "hideZeros": false,
           "mode": "single",
           "sort": "none"
         }
       },
-      "pluginVersion": "9.2.0",
+      "pluginVersion": "12.2.0",
       "targets": [
         {
           "datasource": {
@@ -632,7 +866,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "count(renovate_dependency{repository!=\"\", repository=~\"$repository\", manager=~\"$manager\", depName=~\"$depName\", currentVersion=~\"$currentVersion\"}) by (repository)",
+          "expr": "count(renovate_dependency{repository!=\"\", repository=~\"$repository\", manager=~\"$manager\", depName=~\"$depName\", currentVersion=~\"$currentVersion\", isAbandoned=~\"$isAbandoned\"}) by (repository)",
           "legendFormat": "__auto",
           "range": true,
           "refId": "A"
@@ -649,11 +883,157 @@
       "fieldConfig": {
         "defaults": {
           "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "mappings": []
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "false"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Maintained"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "green",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "true"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Abandoned"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "dark-red",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "/count.*/"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Unknown"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#bbbbbb",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 15
+      },
+      "id": 38,
+      "options": {
+        "displayLabels": [],
+        "legend": {
+          "displayMode": "list",
+          "placement": "right",
+          "showLegend": true,
+          "values": [
+            "value"
+          ]
+        },
+        "pieType": "pie",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "sort": "desc",
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "count(renovate_dependency{repository!=\"\", repository=~\"$repository\", manager=~\"$manager\", depName=~\"$depName\", currentVersion=~\"$currentVersion\"}) by (isAbandoned)",
+          "format": "time_series",
+          "instant": false,
+          "interval": "",
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Number of unique dependencies by abandonment status",
+      "transformations": [
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "(.*)",
+            "renamePattern": "$1"
+          }
+        }
+      ],
+      "type": "piechart"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
             "mode": "thresholds"
           },
           "custom": {
             "align": "auto",
-            "displayMode": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "footer": {
+              "reducers": []
+            },
             "inspect": false
           },
           "mappings": [],
@@ -662,7 +1042,7 @@
             "steps": [
               {
                 "color": "green",
-                "value": null
+                "value": 0
               },
               {
                 "color": "red",
@@ -680,7 +1060,7 @@
             "properties": [
               {
                 "id": "custom.width",
-                "value": 179
+                "value": 541
               }
             ]
           },
@@ -715,8 +1095,11 @@
             },
             "properties": [
               {
-                "id": "custom.displayMode",
-                "value": "color-background-solid"
+                "id": "custom.cellOptions",
+                "value": {
+                  "mode": "basic",
+                  "type": "color-background"
+                }
               },
               {
                 "id": "unit",
@@ -751,8 +1134,11 @@
             },
             "properties": [
               {
-                "id": "custom.displayMode",
-                "value": "color-background-solid"
+                "id": "custom.cellOptions",
+                "value": {
+                  "mode": "basic",
+                  "type": "color-background"
+                }
               },
               {
                 "id": "mappings",
@@ -798,8 +1184,10 @@
             },
             "properties": [
               {
-                "id": "custom.displayMode",
-                "value": "image"
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "image"
+                }
               },
               {
                 "id": "mappings",
@@ -939,12 +1327,45 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "Package Manager File"
+              "options": "Abandoned"
             },
             "properties": [
               {
-                "id": "custom.width",
-                "value": 541
+                "id": "mappings",
+                "value": [
+                  {
+                    "options": {
+                      "false": {
+                        "color": "super-light-green",
+                        "index": 1,
+                        "text": "No"
+                      },
+                      "true": {
+                        "color": "dark-red",
+                        "index": 0,
+                        "text": "Yes"
+                      }
+                    },
+                    "type": "value"
+                  },
+                  {
+                    "options": {
+                      "match": "empty",
+                      "result": {
+                        "color": "transparent",
+                        "index": 2,
+                        "text": "-"
+                      }
+                    },
+                    "type": "special"
+                  }
+                ]
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background"
+                }
               }
             ]
           }
@@ -958,18 +1379,17 @@
       },
       "id": 35,
       "options": {
-        "footer": {
-          "fields": "",
-          "reducer": [
-            "sum"
-          ],
-          "show": false
-        },
+        "cellHeight": "sm",
         "frameIndex": 1,
         "showHeader": true,
-        "sortBy": []
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "Abandoned"
+          }
+        ]
       },
-      "pluginVersion": "9.2.0",
+      "pluginVersion": "12.2.0",
       "targets": [
         {
           "datasource": {
@@ -978,7 +1398,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "sum(renovate_dependency{repository!=\"\", repository=~\"$repository\", manager=~\"$manager\", depName=~\"$depName\", currentVersion=~\"$currentVersion\"}) by (manager, repository, depName, currentVersion, packageFile)",
+          "expr": "sum(renovate_dependency{repository!=\"\", repository=~\"$repository\", manager=~\"$manager\", depName=~\"$depName\", currentVersion=~\"$currentVersion\"}) by (manager, repository, depName, currentVersion, packageFile, isAbandoned)",
           "format": "table",
           "instant": true,
           "interval": "",
@@ -1008,23 +1428,23 @@
             "excludeByName": {
               "Time": true
             },
+            "includeByName": {},
             "indexByName": {
               "@": 4,
               "Time": 0,
-              "Value": 10,
+              "Value": 8,
               "currentVersion": 5,
               "depName": 2,
+              "isAbandoned": 6,
               "manager": 3,
-              "newVersion": 6,
-              "packageFile": 9,
-              "repository": 1,
-              "updateType": 8,
-              "vulnerabilityFix": 7
+              "packageFile": 7,
+              "repository": 1
             },
             "renameByName": {
               "Value": "Dependency used",
               "currentVersion": "Installed Version",
               "depName": "Package",
+              "isAbandoned": "Abandoned",
               "manager": "Package Manager",
               "newVersion": "Available Version",
               "packageFile": "Package Manager File",
@@ -1095,12 +1515,14 @@
           "fields": "",
           "values": false
         },
+        "sort": "desc",
         "tooltip": {
+          "hideZeros": false,
           "mode": "single",
           "sort": "none"
         }
       },
-      "pluginVersion": "9.2.0",
+      "pluginVersion": "12.2.0",
       "targets": [
         {
           "datasource": {
@@ -1162,12 +1584,14 @@
           "fields": "",
           "values": false
         },
+        "sort": "desc",
         "tooltip": {
+          "hideZeros": false,
           "mode": "single",
           "sort": "none"
         }
       },
-      "pluginVersion": "9.2.0",
+      "pluginVersion": "12.2.0",
       "targets": [
         {
           "datasource": {
@@ -1229,12 +1653,14 @@
           "fields": "",
           "values": false
         },
+        "sort": "desc",
         "tooltip": {
+          "hideZeros": false,
           "mode": "single",
           "sort": "none"
         }
       },
-      "pluginVersion": "9.2.0",
+      "pluginVersion": "12.2.0",
       "targets": [
         {
           "datasource": {
@@ -1296,12 +1722,14 @@
           "fields": "",
           "values": false
         },
+        "sort": "desc",
         "tooltip": {
+          "hideZeros": false,
           "mode": "single",
           "sort": "none"
         }
       },
-      "pluginVersion": "9.2.0",
+      "pluginVersion": "12.2.0",
       "targets": [
         {
           "datasource": {
@@ -1363,12 +1791,14 @@
           "fields": "",
           "values": false
         },
+        "sort": "desc",
         "tooltip": {
+          "hideZeros": false,
           "mode": "single",
           "sort": "none"
         }
       },
-      "pluginVersion": "9.2.0",
+      "pluginVersion": "12.2.0",
       "targets": [
         {
           "datasource": {
@@ -1396,11 +1826,13 @@
             "mode": "palette-classic"
           },
           "custom": {
+            "axisBorderShow": false,
             "axisCenteredZero": false,
             "axisColorMode": "text",
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
+            "barWidthFactor": 0.6,
             "drawStyle": "line",
             "fillOpacity": 11,
             "gradientMode": "none",
@@ -1409,6 +1841,7 @@
               "tooltip": false,
               "viz": false
             },
+            "insertNulls": false,
             "lineInterpolation": "linear",
             "lineWidth": 1,
             "pointSize": 5,
@@ -1416,6 +1849,7 @@
               "type": "linear"
             },
             "showPoints": "auto",
+            "showValues": false,
             "spanNulls": false,
             "stacking": {
               "group": "A",
@@ -1431,7 +1865,7 @@
             "steps": [
               {
                 "color": "green",
-                "value": null
+                "value": 0
               },
               {
                 "color": "red",
@@ -1457,11 +1891,12 @@
           "showLegend": true
         },
         "tooltip": {
+          "hideZeros": false,
           "mode": "single",
           "sort": "none"
         }
       },
-      "pluginVersion": "9.2.0",
+      "pluginVersion": "12.2.0",
       "targets": [
         {
           "datasource": {
@@ -1491,11 +1926,13 @@
             "mode": "palette-classic"
           },
           "custom": {
+            "axisBorderShow": false,
             "axisCenteredZero": false,
             "axisColorMode": "text",
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
+            "barWidthFactor": 0.6,
             "drawStyle": "line",
             "fillOpacity": 10,
             "gradientMode": "none",
@@ -1504,6 +1941,7 @@
               "tooltip": false,
               "viz": false
             },
+            "insertNulls": false,
             "lineInterpolation": "linear",
             "lineWidth": 2,
             "pointSize": 1,
@@ -1511,6 +1949,7 @@
               "type": "linear"
             },
             "showPoints": "auto",
+            "showValues": false,
             "spanNulls": false,
             "stacking": {
               "group": "A",
@@ -1526,7 +1965,7 @@
             "steps": [
               {
                 "color": "green",
-                "value": null
+                "value": 0
               },
               {
                 "color": "red",
@@ -1552,11 +1991,12 @@
           "showLegend": true
         },
         "tooltip": {
+          "hideZeros": false,
           "mode": "single",
           "sort": "none"
         }
       },
-      "pluginVersion": "9.2.0",
+      "pluginVersion": "12.2.0",
       "targets": [
         {
           "datasource": {
@@ -1587,7 +2027,12 @@
           },
           "custom": {
             "align": "auto",
-            "displayMode": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "footer": {
+              "reducers": []
+            },
             "inspect": false
           },
           "mappings": [],
@@ -1596,7 +2041,7 @@
             "steps": [
               {
                 "color": "green",
-                "value": null
+                "value": 0
               },
               {
                 "color": "red",
@@ -1614,7 +2059,7 @@
             "properties": [
               {
                 "id": "custom.width",
-                "value": 179
+                "value": 180
               }
             ]
           },
@@ -1649,8 +2094,11 @@
             },
             "properties": [
               {
-                "id": "custom.displayMode",
-                "value": "color-background-solid"
+                "id": "custom.cellOptions",
+                "value": {
+                  "mode": "basic",
+                  "type": "color-background"
+                }
               },
               {
                 "id": "unit",
@@ -1678,7 +2126,7 @@
               },
               {
                 "id": "custom.width",
-                "value": 188
+                "value": 120
               }
             ]
           },
@@ -1689,8 +2137,11 @@
             },
             "properties": [
               {
-                "id": "custom.displayMode",
-                "value": "color-background-solid"
+                "id": "custom.cellOptions",
+                "value": {
+                  "mode": "basic",
+                  "type": "color-background"
+                }
               },
               {
                 "id": "mappings",
@@ -1729,7 +2180,7 @@
               },
               {
                 "id": "custom.width",
-                "value": 175
+                "value": 105
               }
             ]
           },
@@ -1740,8 +2191,10 @@
             },
             "properties": [
               {
-                "id": "custom.displayMode",
-                "value": "image"
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "image"
+                }
               },
               {
                 "id": "mappings",
@@ -1888,13 +2341,7 @@
       },
       "id": 19,
       "options": {
-        "footer": {
-          "fields": "",
-          "reducer": [
-            "sum"
-          ],
-          "show": false
-        },
+        "cellHeight": "sm",
         "frameIndex": 1,
         "showHeader": true,
         "sortBy": [
@@ -1904,7 +2351,7 @@
           }
         ]
       },
-      "pluginVersion": "9.2.0",
+      "pluginVersion": "12.2.0",
       "targets": [
         {
           "datasource": {
@@ -1942,10 +2389,16 @@
           "options": {
             "alias": "Released At",
             "binary": {
-              "left": "releaseTimestamp",
+              "left": {
+                "matcher": {
+                  "id": "byName",
+                  "options": "releaseTimestamp"
+                }
+              },
               "operator": "*",
-              "reducer": "sum",
-              "right": "1000"
+              "right": {
+                "fixed": "1000"
+              }
             },
             "mode": "binary",
             "reduce": {
@@ -2016,7 +2469,12 @@
           },
           "custom": {
             "align": "auto",
-            "displayMode": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "footer": {
+              "reducers": []
+            },
             "inspect": false
           },
           "mappings": [],
@@ -2025,7 +2483,7 @@
             "steps": [
               {
                 "color": "green",
-                "value": null
+                "value": 0
               }
             ]
           }
@@ -2048,7 +2506,7 @@
                   "steps": [
                     {
                       "color": "green",
-                      "value": null
+                      "value": 0
                     },
                     {
                       "color": "red",
@@ -2058,8 +2516,11 @@
                 }
               },
               {
-                "id": "custom.displayMode",
-                "value": "color-background-solid"
+                "id": "custom.cellOptions",
+                "value": {
+                  "mode": "basic",
+                  "type": "color-background"
+                }
               }
             ]
           },
@@ -2078,24 +2539,18 @@
         ]
       },
       "gridPos": {
-        "h": 8,
+        "h": 10,
         "w": 9,
         "x": 0,
         "y": 80
       },
       "id": 31,
       "options": {
-        "footer": {
-          "fields": "",
-          "reducer": [
-            "sum"
-          ],
-          "show": false
-        },
+        "cellHeight": "sm",
         "showHeader": true,
         "sortBy": []
       },
-      "pluginVersion": "9.2.0",
+      "pluginVersion": "12.2.0",
       "targets": [
         {
           "datasource": {
@@ -2132,38 +2587,30 @@
       "type": "table"
     }
   ],
+  "preload": false,
   "refresh": "15m",
-  "schemaVersion": 37,
-  "style": "dark",
+  "schemaVersion": 42,
   "tags": [],
   "templating": {
     "list": [
       {
         "current": {
-          "selected": false,
-          "text": "cluster",
-          "value": "cluster"
+          "text": "Prometheus",
+          "value": "prometheus"
         },
-        "hide": 0,
         "includeAll": false,
         "label": "Datasource",
-        "multi": false,
         "name": "datasource",
         "options": [],
         "query": "prometheus",
-        "queryValue": "",
         "refresh": 1,
         "regex": "",
-        "skipUrlSync": false,
         "type": "datasource"
       },
       {
         "allValue": ".*",
         "current": {
-          "selected": true,
-          "text": [
-            "All"
-          ],
+          "text": "All",
           "value": [
             "$__all"
           ]
@@ -2173,7 +2620,6 @@
           "uid": "${datasource}"
         },
         "definition": "label_values(renovate_dependency{repository!=\"\"}, repository)",
-        "hide": 0,
         "includeAll": true,
         "label": "Repository",
         "multi": true,
@@ -2185,17 +2631,12 @@
         },
         "refresh": 2,
         "regex": "",
-        "skipUrlSync": false,
-        "sort": 0,
         "type": "query"
       },
       {
         "allValue": ".*",
         "current": {
-          "selected": true,
-          "text": [
-            "All"
-          ],
+          "text": "All",
           "value": [
             "$__all"
           ]
@@ -2205,7 +2646,6 @@
           "uid": "${datasource}"
         },
         "definition": "label_values(renovate_dependency{repository=~\"$repository\"}, manager)",
-        "hide": 0,
         "includeAll": true,
         "label": "Package manager",
         "multi": true,
@@ -2217,17 +2657,12 @@
         },
         "refresh": 2,
         "regex": "",
-        "skipUrlSync": false,
-        "sort": 0,
         "type": "query"
       },
       {
         "allValue": ".*",
         "current": {
-          "selected": true,
-          "text": [
-            "All"
-          ],
+          "text": "All",
           "value": [
             "$__all"
           ]
@@ -2237,7 +2672,6 @@
           "uid": "${datasource}"
         },
         "definition": "label_values(renovate_dependency{manager=~\"$manager\", repository=~\"$repository\",}, depName)",
-        "hide": 0,
         "includeAll": true,
         "label": "Package",
         "multi": true,
@@ -2249,17 +2683,12 @@
         },
         "refresh": 2,
         "regex": "",
-        "skipUrlSync": false,
-        "sort": 0,
         "type": "query"
       },
       {
         "allValue": ".*",
         "current": {
-          "selected": true,
-          "text": [
-            "All"
-          ],
+          "text": "All",
           "value": [
             "$__all"
           ]
@@ -2269,7 +2698,6 @@
           "uid": "${datasource}"
         },
         "definition": "label_values(renovate_dependency{manager=~\"$manager\", repository=~\"$repository\", depName=~\"$depName\"}, currentVersion)",
-        "hide": 0,
         "includeAll": true,
         "label": "Package Version",
         "multi": true,
@@ -2281,14 +2709,11 @@
         },
         "refresh": 2,
         "regex": "",
-        "skipUrlSync": false,
-        "sort": 0,
         "type": "query"
       },
       {
         "allValue": ".*",
         "current": {
-          "selected": false,
           "text": "All",
           "value": "$__all"
         },
@@ -2297,10 +2722,8 @@
           "uid": "${datasource}"
         },
         "definition": "label_values(renovate_dependency_update{manager=~\"$manager\", repository=~\"$repository\", depName=~\"$depName\"}, vulnerabilityFix)",
-        "hide": 0,
         "includeAll": true,
         "label": "Security Update",
-        "multi": false,
         "name": "vulnerabilityFix",
         "options": [],
         "query": {
@@ -2309,8 +2732,41 @@
         },
         "refresh": 2,
         "regex": "",
-        "skipUrlSync": false,
-        "sort": 0,
+        "type": "query"
+      },
+      {
+        "allValue": ".*",
+        "current": {
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${datasource}"
+        },
+        "definition": "label_values(renovate_dependency{manager=~\"$manager\", repository=~\"$repository\", depName=~\"$depName\"},isAbandoned)",
+        "includeAll": true,
+        "label": "Abandoned",
+        "multi": true,
+        "name": "isAbandoned",
+        "options": [],
+        "query": {
+          "qryType": 1,
+          "query": "label_values(renovate_dependency{manager=~\"$manager\", repository=~\"$repository\", depName=~\"$depName\"},isAbandoned)",
+          "refId": "PrometheusVariableQueryEditor-VariableQuery"
+        },
+        "refresh": 2,
+        "regex": "",
+        "staticOptions": [
+          {
+            "text": "Unknown",
+            "value": ""
+          }
+        ],
         "type": "query"
       }
     ]
@@ -2322,5 +2778,6 @@
   "timepicker": {},
   "timezone": "",
   "title": "Renovate",
-  "weekStart": ""
+  "uid": "26bb73b8-464b-432e-ba94-805dd94ed613",
+  "version": 1
 }

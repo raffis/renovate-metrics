@@ -1,5 +1,7 @@
 package parser
 
+import "encoding/json"
+
 type logLine struct {
 	Name              string                          `json:"name,omitempty"`
 	Hostname          string                          `json:"hostname,omitempty"`
@@ -28,17 +30,18 @@ type packageDependency struct {
 }
 
 type dependency struct {
-	DepName                   string    `json:"depName,omitempty"`
-	CurrentValue              string    `json:"currentValue,omitempty"`
-	ReplaceString             string    `json:"replaceString,omitempty"`
-	AutoReplaceStringTemplate string    `json:"autoReplaceStringTemplate,omitempty"`
-	Datasource                string    `json:"datasource,omitempty"`
-	DepType                   string    `json:"depType,omitempty"`
-	Updates                   []update  `json:"updates,omitempty"`
-	PackageName               string    `json:"packageName,omitempty"`
-	Warnings                  []warning `json:"warnings,omitempty"`
-	Versioning                string    `json:"versioning,omitempty"`
-	SkipReason                string    `json:"skipReason,omitempty"`
+	DepName                   string     `json:"depName,omitempty"`
+	CurrentValue              string     `json:"currentValue,omitempty"`
+	ReplaceString             string     `json:"replaceString,omitempty"`
+	AutoReplaceStringTemplate string     `json:"autoReplaceStringTemplate,omitempty"`
+	Datasource                string     `json:"datasource,omitempty"`
+	DepType                   string     `json:"depType,omitempty"`
+	Updates                   []update   `json:"updates,omitempty"`
+	PackageName               string     `json:"packageName,omitempty"`
+	Warnings                  []warning  `json:"warnings,omitempty"`
+	Versioning                string     `json:"versioning,omitempty"`
+	SkipReason                string     `json:"skipReason,omitempty"`
+	IsAbandoned               boolString `json:"isAbandoned,omitempty"`
 }
 
 type warning struct {
@@ -56,4 +59,28 @@ type update struct {
 	UpdateType       string `json:"updateType,omitempty"`
 	NewDigest        string `json:"newDigest,omitempty"`
 	BranchName       string `json:"branchName,omitempty"`
+}
+
+type boolString string
+
+func (b *boolString) UnmarshalJSON(data []byte) error {
+	var v interface{}
+	if err := json.Unmarshal(data, &v); err != nil {
+		return err
+	}
+
+	switch val := v.(type) {
+	case bool:
+		if val {
+			*b = "true"
+		} else {
+			*b = "false"
+		}
+	case string:
+		*b = boolString(val)
+	default:
+		*b = ""
+	}
+
+	return nil
 }

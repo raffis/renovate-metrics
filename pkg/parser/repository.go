@@ -21,9 +21,11 @@ type packageDefinition struct {
 	CurrentVersion string
 	DependencyType string
 	PackageFile    string
+	PackageName    string
 	Manager        string
 	WarningMessage string
 	BaseBranch     string
+	IsAbandoned    string
 }
 
 type packageUpdate struct {
@@ -36,13 +38,13 @@ func NewRepository(repo string) *repository {
 		Namespace: "renovate",
 		Name:      "dependency",
 		Help:      "Installed dependency",
-	}, []string{"manager", "packageFile", "depName", "depType", "currentVersion", "warning", "baseBranch"})
+	}, []string{"manager", "packageFile", "depName", "packageName", "depType", "currentVersion", "warning", "baseBranch", "isAbandoned"})
 
 	dependencyUpdateMetric := prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Namespace: "renovate",
 		Name:      "dependency_update",
 		Help:      "Available update of an installed dependency",
-	}, []string{"manager", "packageFile", "depName", "depType", "currentVersion", "updateType", "newVersion", "vulnerabilityFix", "releaseTimestamp", "baseBranch"})
+	}, []string{"manager", "packageFile", "depName", "packageName", "depType", "currentVersion", "updateType", "newVersion", "vulnerabilityFix", "releaseTimestamp", "baseBranch", "isAbandoned"})
 
 	lastSuccessfulRunMetric := prometheus.NewGauge(prometheus.GaugeOpts{
 		Namespace: "renovate",
@@ -85,10 +87,12 @@ func (p *repository) packageDefinition(metric *prometheus.GaugeVec, definition p
 		"manager":        definition.Manager,
 		"packageFile":    definition.PackageFile,
 		"depName":        definition.DependencyName,
+		"packageName":    definition.PackageName,
 		"depType":        definition.DependencyType,
 		"currentVersion": definition.CurrentVersion,
 		"warning":        definition.WarningMessage,
 		"baseBranch":     definition.BaseBranch,
+		"isAbandoned":    definition.IsAbandoned,
 	})
 
 	m.Set(1)
@@ -113,6 +117,7 @@ func (p *repository) packageUpdate(metric *prometheus.GaugeVec, update packageUp
 		"manager":          update.Manager,
 		"packageFile":      update.PackageFile,
 		"depName":          update.DependencyName,
+		"packageName":      update.PackageName,
 		"currentVersion":   update.CurrentVersion,
 		"depType":          update.DependencyType,
 		"updateType":       update.UpdateType,
@@ -120,6 +125,7 @@ func (p *repository) packageUpdate(metric *prometheus.GaugeVec, update packageUp
 		"vulnerabilityFix": strconv.FormatBool(isVulnerabilityUpdate),
 		"releaseTimestamp": strconv.FormatInt(ts.Unix(), 10),
 		"baseBranch":       update.BaseBranch,
+		"isAbandoned":      update.IsAbandoned,
 	})
 	m.Set(1)
 	p.packageUpdates[update] = m
@@ -146,8 +152,10 @@ func (p *repository) Parse(line logLine) error {
 						DependencyType: dep.DepType,
 						Manager:        manager,
 						PackageFile:    packageDependency.PackageFile,
+						PackageName:    dep.PackageName,
 						WarningMessage: warningMessage,
 						BaseBranch:     line.BaseBranch,
+						IsAbandoned:    string(dep.IsAbandoned),
 					})
 
 					for _, update := range dep.Updates {
@@ -158,7 +166,9 @@ func (p *repository) Parse(line logLine) error {
 								CurrentVersion: dep.CurrentValue,
 								Manager:        manager,
 								PackageFile:    packageDependency.PackageFile,
+								PackageName:    dep.PackageName,
 								BaseBranch:     line.BaseBranch,
+								IsAbandoned:    string(dep.IsAbandoned),
 							},
 							update: update,
 						})
