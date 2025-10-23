@@ -1398,7 +1398,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "sum(renovate_dependency{repository!=\"\", repository=~\"$repository\", manager=~\"$manager\", depName=~\"$depName\", currentVersion=~\"$currentVersion\"}) by (manager, repository, depName, currentVersion, packageFile, isAbandoned)",
+          "expr": "sum(renovate_dependency{repository!=\"\", repository=~\"$repository\", manager=~\"$manager\", depName=~\"$depName\", currentVersion=~\"$currentVersion\", isAbandoned=~\"$isAbandoned\"}) by (manager, repository, depName, currentVersion, packageFile, isAbandoned)",
           "format": "table",
           "instant": true,
           "interval": "",
