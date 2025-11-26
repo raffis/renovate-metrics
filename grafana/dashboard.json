@@ -88,7 +88,7 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "12.2.0",
+      "pluginVersion": "12.3.0",
       "targets": [
         {
           "datasource": {
@@ -96,7 +96,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "sum(renovate_dependency{repository!=\"\", repository=~\"$repository\", manager=~\"$manager\", depName=~\"$depName\", currentVersion=~\"$currentVersion\"})",
+          "expr": "sum(renovate_dependency{repository!=\"\", repository=~\"$repository\", baseBranch=~\"$baseBranch\", manager=~\"$manager\", depName=~\"$depName\", currentVersion=~\"$currentVersion\"})",
           "legendFormat": "__auto",
           "range": true,
           "refId": "A"
@@ -157,7 +157,7 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "12.2.0",
+      "pluginVersion": "12.3.0",
       "targets": [
         {
           "datasource": {
@@ -165,7 +165,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "sum(renovate_dependency_update{repository!=\"\", repository=~\"$repository\", manager=~\"$manager\", depName=~\"$depName\", currentVersion=~\"$currentVersion\", vulnerabilityFix=\"true\"})",
+          "expr": "sum(renovate_dependency_update{repository!=\"\", repository=~\"$repository\", baseBranch=~\"$baseBranch\", manager=~\"$manager\", depName=~\"$depName\", currentVersion=~\"$currentVersion\", vulnerabilityFix=\"true\"})",
           "legendFormat": "__auto",
           "range": true,
           "refId": "A"
@@ -226,7 +226,7 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "12.2.0",
+      "pluginVersion": "12.3.0",
       "targets": [
         {
           "datasource": {
@@ -234,7 +234,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "sum(renovate_dependency{repository!=\"\", repository=~\"$repository\", manager=~\"$manager\", depName=~\"$depName\", currentVersion=~\"$currentVersion\", isAbandoned=\"true\"})",
+          "expr": "sum(renovate_dependency{repository!=\"\", repository=~\"$repository\", baseBranch=~\"$baseBranch\", manager=~\"$manager\", depName=~\"$depName\", currentVersion=~\"$currentVersion\", isAbandoned=\"true\"})",
           "legendFormat": "__auto",
           "range": true,
           "refId": "A"
@@ -290,7 +290,7 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "12.2.0",
+      "pluginVersion": "12.3.0",
       "targets": [
         {
           "datasource": {
@@ -298,7 +298,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "sum(renovate_dependency_update{repository!=\"\", repository=~\"$repository\", manager=~\"$manager\", depName=~\"$depName\", currentVersion=~\"$currentVersion\"})",
+          "expr": "sum(renovate_dependency_update{repository!=\"\", repository=~\"$repository\", baseBranch=~\"$baseBranch\", manager=~\"$manager\", depName=~\"$depName\", currentVersion=~\"$currentVersion\"})",
           "legendFormat": "__auto",
           "range": true,
           "refId": "A"
@@ -364,7 +364,7 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "12.2.0",
+      "pluginVersion": "12.3.0",
       "targets": [
         {
           "datasource": {
@@ -372,7 +372,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "sum(renovate_dependency_update{repository!=\"\", repository=~\"$repository\", manager=~\"$manager\", depName=~\"$depName\", currentVersion=~\"$currentVersion\"}) / sum(renovate_dependency{repository!=\"\", repository=~\"$repository\", manager=~\"$manager\", depName=~\"$depName\", currentVersion=~\"$currentVersion\"}) * 100",
+          "expr": "sum(renovate_dependency_update{repository!=\"\", repository=~\"$repository\", baseBranch=~\"$baseBranch\", manager=~\"$manager\", depName=~\"$depName\", currentVersion=~\"$currentVersion\"}) / sum(renovate_dependency{repository!=\"\", repository=~\"$repository\", baseBranch=~\"$baseBranch\", manager=~\"$manager\", depName=~\"$depName\", currentVersion=~\"$currentVersion\"}) * 100",
           "legendFormat": "__auto",
           "range": true,
           "refId": "A"
@@ -428,7 +428,7 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "12.2.0",
+      "pluginVersion": "12.3.0",
       "targets": [
         {
           "datasource": {
@@ -436,13 +436,77 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "count(count by (repository) (renovate_dependency{repository!=\"\", repository=~\"$repository\", manager=~\"$manager\", depName=~\"$depName\", currentVersion=~\"$currentVersion\"}))",
+          "expr": "count(count by (repository) (renovate_dependency{repository!=\"\", repository=~\"$repository\", baseBranch=~\"$baseBranch\", manager=~\"$manager\", depName=~\"$depName\", currentVersion=~\"$currentVersion\"}))",
           "legendFormat": "__auto",
           "range": true,
           "refId": "A"
         }
       ],
       "title": "Monitored repositories",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 4,
+        "x": 0,
+        "y": 6
+      },
+      "id": 39,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.3.0",
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "sum(renovate_dependency{repository!=\"\", repository=~\"$repository\", manager=~\"$manager\", depName=~\"$depName\", currentVersion=~\"$currentVersion\", warning!=\"\", baseBranch=~\"$baseBranch\"})",
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Warnings",
       "type": "stat"
     },
     {
@@ -510,7 +574,7 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "12.2.0",
+      "pluginVersion": "12.3.0",
       "targets": [
         {
           "datasource": {
@@ -518,7 +582,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "sum(renovate_dependency{repository!=\"\", repository=~\"$repository\", manager=~\"$manager\", depName=~\"$depName\", currentVersion=~\"$currentVersion\", isAbandoned=~\"$isAbandoned\"}) by (manager)",
+          "expr": "sum(renovate_dependency{repository!=\"\", repository=~\"$repository\", baseBranch=~\"$baseBranch\", manager=~\"$manager\", depName=~\"$depName\", currentVersion=~\"$currentVersion\", isAbandoned=~\"$isAbandoned\"}) by (manager)",
           "legendFormat": "__auto",
           "range": true,
           "refId": "A"
@@ -579,7 +643,7 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "12.2.0",
+      "pluginVersion": "12.3.0",
       "targets": [
         {
           "datasource": {
@@ -587,7 +651,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "sum(renovate_dependency{repository!=\"\", repository=~\"$repository\", manager=~\"$manager\", depName=~\"$depName\", currentVersion=~\"$currentVersion\", isAbandoned=~\"$isAbandoned\"}) by (repository)",
+          "expr": "sum(renovate_dependency{repository!=\"\", repository=~\"$repository\", baseBranch=~\"$baseBranch\", manager=~\"$manager\", depName=~\"$depName\", currentVersion=~\"$currentVersion\", isAbandoned=~\"$isAbandoned\"}) by (repository)",
           "legendFormat": "__auto",
           "range": true,
           "refId": "A"
@@ -707,7 +771,7 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "12.2.0",
+      "pluginVersion": "12.3.0",
       "targets": [
         {
           "datasource": {
@@ -716,7 +780,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "sum(renovate_dependency{repository!=\"\", repository=~\"$repository\", manager=~\"$manager\", depName=~\"$depName\", currentVersion=~\"$currentVersion\"}) by (isAbandoned)",
+          "expr": "sum(renovate_dependency{repository!=\"\", repository=~\"$repository\", baseBranch=~\"$baseBranch\", manager=~\"$manager\", depName=~\"$depName\", currentVersion=~\"$currentVersion\"}) by (isAbandoned)",
           "format": "time_series",
           "instant": false,
           "interval": "",
@@ -789,7 +853,7 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "12.2.0",
+      "pluginVersion": "12.3.0",
       "targets": [
         {
           "datasource": {
@@ -797,7 +861,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "count(renovate_dependency{repository!=\"\", repository=~\"$repository\", manager=~\"$manager\", depName=~\"$depName\", currentVersion=~\"$currentVersion\", isAbandoned=~\"$isAbandoned\"}) by (manager)",
+          "expr": "count(renovate_dependency{repository!=\"\", repository=~\"$repository\", baseBranch=~\"$baseBranch\", manager=~\"$manager\", depName=~\"$depName\", currentVersion=~\"$currentVersion\", isAbandoned=~\"$isAbandoned\"}) by (manager)",
           "legendFormat": "__auto",
           "range": true,
           "refId": "A"
@@ -858,7 +922,7 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "12.2.0",
+      "pluginVersion": "12.3.0",
       "targets": [
         {
           "datasource": {
@@ -866,7 +930,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "count(renovate_dependency{repository!=\"\", repository=~\"$repository\", manager=~\"$manager\", depName=~\"$depName\", currentVersion=~\"$currentVersion\", isAbandoned=~\"$isAbandoned\"}) by (repository)",
+          "expr": "count(renovate_dependency{repository!=\"\", repository=~\"$repository\", baseBranch=~\"$baseBranch\", manager=~\"$manager\", depName=~\"$depName\", currentVersion=~\"$currentVersion\", isAbandoned=~\"$isAbandoned\"}) by (repository)",
           "legendFormat": "__auto",
           "range": true,
           "refId": "A"
@@ -986,7 +1050,7 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "12.2.0",
+      "pluginVersion": "12.3.0",
       "targets": [
         {
           "datasource": {
@@ -995,7 +1059,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "count(renovate_dependency{repository!=\"\", repository=~\"$repository\", manager=~\"$manager\", depName=~\"$depName\", currentVersion=~\"$currentVersion\"}) by (isAbandoned)",
+          "expr": "count(renovate_dependency{repository!=\"\", repository=~\"$repository\", baseBranch=~\"$baseBranch\", manager=~\"$manager\", depName=~\"$depName\", currentVersion=~\"$currentVersion\"}) by (isAbandoned)",
           "format": "time_series",
           "instant": false,
           "interval": "",
@@ -1389,7 +1453,7 @@
           }
         ]
       },
-      "pluginVersion": "12.2.0",
+      "pluginVersion": "12.3.0",
       "targets": [
         {
           "datasource": {
@@ -1398,7 +1462,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "sum(renovate_dependency{repository!=\"\", repository=~\"$repository\", manager=~\"$manager\", depName=~\"$depName\", currentVersion=~\"$currentVersion\", isAbandoned=~\"$isAbandoned\"}) by (manager, repository, depName, currentVersion, packageFile, isAbandoned)",
+          "expr": "sum(renovate_dependency{repository!=\"\", repository=~\"$repository\", baseBranch=~\"$baseBranch\", manager=~\"$manager\", depName=~\"$depName\", currentVersion=~\"$currentVersion\", isAbandoned=~\"$isAbandoned\"}) by (manager, repository, depName, currentVersion, packageFile, isAbandoned)",
           "format": "table",
           "instant": true,
           "interval": "",
@@ -1522,7 +1586,7 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "12.2.0",
+      "pluginVersion": "12.3.0",
       "targets": [
         {
           "datasource": {
@@ -1530,7 +1594,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "sum(renovate_dependency_update{repository!=\"\", repository=~\"$repository\", manager=~\"$manager\", depName=~\"$depName\", currentVersion=~\"$currentVersion\", vulnerabilityFix=~\"$vulnerabilityFix\"}) by (manager)",
+          "expr": "sum(renovate_dependency_update{repository!=\"\", repository=~\"$repository\", baseBranch=~\"$baseBranch\", manager=~\"$manager\", depName=~\"$depName\", currentVersion=~\"$currentVersion\", vulnerabilityFix=~\"$vulnerabilityFix\"}) by (manager)",
           "legendFormat": "__auto",
           "range": true,
           "refId": "A"
@@ -1591,7 +1655,7 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "12.2.0",
+      "pluginVersion": "12.3.0",
       "targets": [
         {
           "datasource": {
@@ -1599,7 +1663,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "sum(renovate_dependency_update{repository!=\"\", repository=~\"$repository\", manager=~\"$manager\", depName=~\"$depName\", currentVersion=~\"$currentVersion\", vulnerabilityFix=~\"$vulnerabilityFix\"}) by (repository)",
+          "expr": "sum(renovate_dependency_update{repository!=\"\", repository=~\"$repository\", baseBranch=~\"$baseBranch\", manager=~\"$manager\", depName=~\"$depName\", currentVersion=~\"$currentVersion\", vulnerabilityFix=~\"$vulnerabilityFix\"}) by (repository)",
           "legendFormat": "__auto",
           "range": true,
           "refId": "A"
@@ -1660,7 +1724,7 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "12.2.0",
+      "pluginVersion": "12.3.0",
       "targets": [
         {
           "datasource": {
@@ -1668,7 +1732,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "sum(renovate_dependency_update{repository!=\"\", repository=~\"$repository\", manager=~\"$manager\", depName=~\"$depName\", currentVersion=~\"$currentVersion\", vulnerabilityFix=~\"$vulnerabilityFix\"}) by (updateType)",
+          "expr": "sum(renovate_dependency_update{repository!=\"\", repository=~\"$repository\", baseBranch=~\"$baseBranch\", manager=~\"$manager\", depName=~\"$depName\", currentVersion=~\"$currentVersion\", vulnerabilityFix=~\"$vulnerabilityFix\"}) by (updateType)",
           "legendFormat": "__auto",
           "range": true,
           "refId": "A"
@@ -1729,7 +1793,7 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "12.2.0",
+      "pluginVersion": "12.3.0",
       "targets": [
         {
           "datasource": {
@@ -1737,7 +1801,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "count(renovate_dependency_update{repository!=\"\", repository=~\"$repository\", manager=~\"$manager\", depName=~\"$depName\", currentVersion=~\"$currentVersion\", vulnerabilityFix=~\"$vulnerabilityFix\"}) by (manager)",
+          "expr": "count(renovate_dependency_update{repository!=\"\", repository=~\"$repository\", baseBranch=~\"$baseBranch\", manager=~\"$manager\", depName=~\"$depName\", currentVersion=~\"$currentVersion\", vulnerabilityFix=~\"$vulnerabilityFix\"}) by (manager)",
           "legendFormat": "__auto",
           "range": true,
           "refId": "A"
@@ -1798,7 +1862,7 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "12.2.0",
+      "pluginVersion": "12.3.0",
       "targets": [
         {
           "datasource": {
@@ -1806,7 +1870,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "count(renovate_dependency_update{repository!=\"\", repository=~\"$repository\", manager=~\"$manager\", depName=~\"$depName\", currentVersion=~\"$currentVersion\", vulnerabilityFix=~\"$vulnerabilityFix\"}) by (repository)",
+          "expr": "count(renovate_dependency_update{repository!=\"\", repository=~\"$repository\", baseBranch=~\"$baseBranch\", manager=~\"$manager\", depName=~\"$depName\", currentVersion=~\"$currentVersion\", vulnerabilityFix=~\"$vulnerabilityFix\"}) by (repository)",
           "legendFormat": "__auto",
           "range": true,
           "refId": "A"
@@ -1896,7 +1960,7 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "12.2.0",
+      "pluginVersion": "12.3.0",
       "targets": [
         {
           "datasource": {
@@ -1905,7 +1969,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "sum(sum_over_time(renovate_dependency_update{repository!=\"\", repository=~\"$repository\", manager=~\"$manager\", depName=~\"$depName\", currentVersion=~\"$currentVersion\", vulnerabilityFix=~\"$vulnerabilityFix\"}[$__rate_interval])) by (manager)",
+          "expr": "sum(sum_over_time(renovate_dependency_update{repository!=\"\", repository=~\"$repository\", baseBranch=~\"$baseBranch\", manager=~\"$manager\", depName=~\"$depName\", currentVersion=~\"$currentVersion\", vulnerabilityFix=~\"$vulnerabilityFix\"}[$__rate_interval])) by (manager)",
           "instant": false,
           "legendFormat": "__auto",
           "range": true,
@@ -1996,7 +2060,7 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "12.2.0",
+      "pluginVersion": "12.3.0",
       "targets": [
         {
           "datasource": {
@@ -2005,7 +2069,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "sum(sum_over_time(renovate_dependency_update{repository!=\"\", repository=~\"$repository\", manager=~\"$manager\", depName=~\"$depName\", currentVersion=~\"$currentVersion\", vulnerabilityFix=~\"$vulnerabilityFix\"}[$__rate_interval])) by (repository)",
+          "expr": "sum(sum_over_time(renovate_dependency_update{repository!=\"\", repository=~\"$repository\", baseBranch=~\"$baseBranch\", manager=~\"$manager\", depName=~\"$depName\", currentVersion=~\"$currentVersion\", vulnerabilityFix=~\"$vulnerabilityFix\"}[$__rate_interval])) by (repository)",
           "instant": false,
           "legendFormat": "__auto",
           "range": true,
@@ -2351,7 +2415,7 @@
           }
         ]
       },
-      "pluginVersion": "12.2.0",
+      "pluginVersion": "12.3.0",
       "targets": [
         {
           "datasource": {
@@ -2360,7 +2424,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "sum(renovate_dependency_update{repository!=\"\", repository=~\"$repository\", manager=~\"$manager\", depName=~\"$depName\", currentVersion=~\"$currentVersion\", vulnerabilityFix=~\"$vulnerabilityFix\"}) by (manager, repository, depName, currentVersion, packageFile, newVersion, updateType, releaseTimestamp, vulnerabilityFix)",
+          "expr": "sum(renovate_dependency_update{repository!=\"\", repository=~\"$repository\", baseBranch=~\"$baseBranch\", manager=~\"$manager\", depName=~\"$depName\", currentVersion=~\"$currentVersion\", vulnerabilityFix=~\"$vulnerabilityFix\"}) by (manager, repository, depName, currentVersion, packageFile, newVersion, updateType, releaseTimestamp, vulnerabilityFix)",
           "format": "table",
           "instant": true,
           "interval": "",
@@ -2550,7 +2614,7 @@
         "showHeader": true,
         "sortBy": []
       },
-      "pluginVersion": "12.2.0",
+      "pluginVersion": "12.3.0",
       "targets": [
         {
           "datasource": {
@@ -2662,6 +2726,35 @@
       {
         "allValue": ".*",
         "current": {
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${datasource}"
+        },
+        "definition": "label_values(renovate_dependency{repository=~\"$repository\"},baseBranch)",
+        "includeAll": true,
+        "label": "Base Branch",
+        "multi": true,
+        "name": "baseBranch",
+        "options": [],
+        "query": {
+          "qryType": 1,
+          "query": "label_values(renovate_dependency{repository=~\"$repository\"},baseBranch)",
+          "refId": "PrometheusVariableQueryEditor-VariableQuery"
+        },
+        "refresh": 2,
+        "regex": "",
+        "type": "query"
+      },
+      {
+        "allValue": ".*",
+        "current": {
           "text": "All",
           "value": [
             "$__all"
@@ -2697,14 +2790,14 @@
           "type": "prometheus",
           "uid": "${datasource}"
         },
-        "definition": "label_values(renovate_dependency{manager=~\"$manager\", repository=~\"$repository\", depName=~\"$depName\"}, currentVersion)",
+        "definition": "label_values(renovate_dependency{manager=~\"$manager\", repository=~\"$repository\", baseBranch=~\"$baseBranch\", depName=~\"$depName\"}, currentVersion)",
         "includeAll": true,
         "label": "Package Version",
         "multi": true,
         "name": "currentVersion",
         "options": [],
         "query": {
-          "query": "label_values(renovate_dependency{manager=~\"$manager\", repository=~\"$repository\", depName=~\"$depName\"}, currentVersion)",
+          "query": "label_values(renovate_dependency{manager=~\"$manager\", repository=~\"$repository\", baseBranch=~\"$baseBranch\", depName=~\"$depName\"}, currentVersion)",
           "refId": "StandardVariableQuery"
         },
         "refresh": 2,
@@ -2721,13 +2814,13 @@
           "type": "prometheus",
           "uid": "${datasource}"
         },
-        "definition": "label_values(renovate_dependency_update{manager=~\"$manager\", repository=~\"$repository\", depName=~\"$depName\"}, vulnerabilityFix)",
+        "definition": "label_values(renovate_dependency_update{manager=~\"$manager\", repository=~\"$repository\", baseBranch=~\"$baseBranch\", depName=~\"$depName\"}, vulnerabilityFix)",
         "includeAll": true,
         "label": "Security Update",
         "name": "vulnerabilityFix",
         "options": [],
         "query": {
-          "query": "label_values(renovate_dependency_update{manager=~\"$manager\", repository=~\"$repository\", depName=~\"$depName\"}, vulnerabilityFix)",
+          "query": "label_values(renovate_dependency_update{manager=~\"$manager\", repository=~\"$repository\", baseBranch=~\"$baseBranch\", depName=~\"$depName\"}, vulnerabilityFix)",
           "refId": "StandardVariableQuery"
         },
         "refresh": 2,
@@ -2748,7 +2841,7 @@
           "type": "prometheus",
           "uid": "${datasource}"
         },
-        "definition": "label_values(renovate_dependency{manager=~\"$manager\", repository=~\"$repository\", depName=~\"$depName\"},isAbandoned)",
+        "definition": "label_values(renovate_dependency{manager=~\"$manager\", repository=~\"$repository\", baseBranch=~\"$baseBranch\", depName=~\"$depName\"},isAbandoned)",
         "includeAll": true,
         "label": "Abandoned",
         "multi": true,
@@ -2756,7 +2849,7 @@
         "options": [],
         "query": {
           "qryType": 1,
-          "query": "label_values(renovate_dependency{manager=~\"$manager\", repository=~\"$repository\", depName=~\"$depName\"},isAbandoned)",
+          "query": "label_values(renovate_dependency{manager=~\"$manager\", repository=~\"$repository\", baseBranch=~\"$baseBranch\", depName=~\"$depName\"},isAbandoned)",
           "refId": "PrometheusVariableQueryEditor-VariableQuery"
         },
         "refresh": 2,
@@ -2778,6 +2871,6 @@
   "timepicker": {},
   "timezone": "",
   "title": "Renovate",
-  "uid": "26bb73b8-464b-432e-ba94-805dd94ed613",
+  "uid": "renovate",
   "version": 1
 }
