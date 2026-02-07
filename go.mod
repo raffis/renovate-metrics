@@ -2,7 +2,7 @@ module github.com/raffis/renovate-metrics
 
 go 1.24.0
 
-toolchain go1.25.6
+toolchain go1.25.7
 
 require (
 	github.com/go-logr/logr v1.4.3
