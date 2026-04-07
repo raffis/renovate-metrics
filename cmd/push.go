@@ -12,6 +12,7 @@ import (
 
 var (
 	prometheusArg = "http://localhost:9091"
+	job           = "renovate"
 	bufferSize    = 10485760
 	logLevel      = 0
 )
@@ -53,7 +54,7 @@ func init() {
 
 			for repository, collector := range collectors {
 				// Note: Client can't be reused, as there is no way to unregister a Collector from a Pusher.
-				client := push.New(prometheusArg, "renovate")
+				client := push.New(prometheusArg, job)
 				client.Grouping("repository", repository)
 
 				if err := client.Delete(); err != nil {
@@ -70,6 +71,7 @@ func init() {
 	}
 
 	pushCmd.Flags().StringVarP(&prometheusArg, "prometheus", "", prometheusArg, "Prometheus push gateway URL")
+	pushCmd.Flags().StringVarP(&job, "job", "", job, "Value of job label used when pushing metrics")
 	pushCmd.Flags().IntVarP(&bufferSize, "buffer-size", "", bufferSize, "Buffer size while parsing input")
 	pushCmd.Flags().IntVarP(&logLevel, "log-level", "", logLevel, "Log Level (Default is 0 which is no logging)")
 	rootCmd.AddCommand(pushCmd)
