@@ -102,12 +102,18 @@ func (p *repository) packageDefinition(metric *prometheus.GaugeVec, definition p
 }
 
 func (p *repository) packageUpdate(metric *prometheus.GaugeVec, update packageUpdate) prometheus.Gauge {
+	// There may be different updates for the same package in separate branches. We still want only one metric
+	// for it, so we reset the branch name here prior to the lookup in p.packageUpdates.
+	// Without this prometheus/client_golang will panic because of duplicate metrics.
+	branchName := update.BranchName
+	update.BranchName = ""
+
 	if m, has := p.packageUpdates[update]; has {
 		m.Inc()
 		return m
 	}
 
-	isVulnerabilityUpdate, _ := regexp.MatchString(`-vulnerability$`, update.BranchName)
+	isVulnerabilityUpdate, _ := regexp.MatchString(`-vulnerability$`, branchName)
 	ts, err := time.Parse(time.RFC3339, update.ReleaseTimestamp)
 	if err != nil {
 		ts = time.Unix(0, 0)
