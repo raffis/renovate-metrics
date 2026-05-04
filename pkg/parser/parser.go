@@ -44,6 +44,9 @@ func (p *parser) Parse() (map[string]*repository, error) {
 			if line.Repository == "" {
 				continue
 			}
+			if line.Config == nil && line.Message != "Repository finished" {
+				continue
+			}
 
 			repository := p.repository(line.Repository)
 			if err := repository.Parse(line); err != nil {
