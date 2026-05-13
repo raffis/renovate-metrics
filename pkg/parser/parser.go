@@ -2,6 +2,7 @@ package parser
 
 import (
 	"bufio"
+	"bytes"
 	"encoding/json"
 	"io"
 
@@ -39,12 +40,14 @@ func (p *parser) Parse() (map[string]*repository, error) {
 	scanner.Buffer(b, p.opts.BufferSize)
 	for scanner.Scan() {
 		var line logLine
-		err := json.Unmarshal(scanner.Bytes(), &line)
+		rawLine := scanner.Bytes()
+		if !bytes.Contains(rawLine, []byte(PackageFileUpdatesMessage)) && !bytes.Contains(rawLine, []byte(RepositoryFinishedMessage)) && !bytes.Contains(rawLine, []byte(BranchesInfoMessage)) {
+			continue
+		}
+
+		err := json.Unmarshal(rawLine, &line)
 		if err == nil {
 			if line.Repository == "" {
-				continue
-			}
-			if line.Config == nil && line.Message != "Repository finished" {
 				continue
 			}
 
