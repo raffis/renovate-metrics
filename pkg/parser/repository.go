@@ -9,9 +9,11 @@ import (
 )
 
 type repository struct {
+	branchMetric            *prometheus.GaugeVec
 	dependencyMetric        *prometheus.GaugeVec
 	dependencyUpdateMetric  *prometheus.GaugeVec
 	lastSuccessfulRunMetric prometheus.Gauge
+	branchInformation       map[branchInformation]prometheus.Gauge
 	packageDefinitions      map[packageDefinition]prometheus.Gauge
 	packageUpdates          map[packageUpdate]prometheus.Gauge
 }
@@ -34,6 +36,12 @@ type packageUpdate struct {
 }
 
 func NewRepository(repo string) *repository {
+
+	branchMetric := prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Namespace: "renovate",
+		Name:      "branch",
+		Help:      "Branch information",
+	}, []string{"branch", "result"})
 	dependencyMetric := prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Namespace: "renovate",
 		Name:      "dependency",
@@ -53,9 +61,11 @@ func NewRepository(repo string) *repository {
 	})
 
 	return &repository{
+		branchMetric:            branchMetric,
 		dependencyMetric:        dependencyMetric,
 		dependencyUpdateMetric:  dependencyUpdateMetric,
 		lastSuccessfulRunMetric: lastSuccessfulRunMetric,
+		branchInformation:       make(map[branchInformation]prometheus.Gauge),
 		packageDefinitions:      make(map[packageDefinition]prometheus.Gauge),
 		packageUpdates:          make(map[packageUpdate]prometheus.Gauge),
 	}
@@ -68,6 +78,10 @@ func (p *repository) Describe(ch chan<- *prometheus.Desc) {
 func (p *repository) Collect(ch chan<- prometheus.Metric) {
 	ch <- p.lastSuccessfulRunMetric
 
+	for _, m := range p.branchInformation {
+		ch <- m
+	}
+
 	for _, m := range p.packageDefinitions {
 		ch <- m
 	}
@@ -75,6 +89,21 @@ func (p *repository) Collect(ch chan<- prometheus.Metric) {
 	for _, m := range p.packageUpdates {
 		ch <- m
 	}
+}
+
+func (p *repository) branchInfo(metric *prometheus.GaugeVec, definition branchInformation) prometheus.Gauge {
+	prNo := 0
+	if definition.PrNo != nil {
+		prNo = *definition.PrNo
+	}
+	m := metric.With(prometheus.Labels{
+		"branch": definition.BranchName,
+		"result": definition.Result,
+	})
+
+	m.Set(float64(prNo))
+	p.branchInformation[definition] = m
+	return m
 }
 
 func (p *repository) packageDefinition(metric *prometheus.GaugeVec, definition packageDefinition) prometheus.Gauge {
@@ -141,6 +170,12 @@ func (p *repository) packageUpdate(metric *prometheus.GaugeVec, update packageUp
 
 func (p *repository) Parse(line logLine) error {
 	switch {
+	case line.BranchesInformation != nil:
+		for _, branchInfo := range line.BranchesInformation {
+			if branchInfo.Result != "" {
+				p.branchInfo(p.branchMetric, branchInfo)
+			}
+		}
 	case line.Config != nil:
 		for manager, files := range *line.Config {
 			for _, packageDependency := range files {
@@ -182,7 +217,7 @@ func (p *repository) Parse(line logLine) error {
 				}
 			}
 		}
-	case line.Message == "Repository finished":
+	case line.Message == RepositoryFinishedMessage:
 		ts, err := time.Parse(time.RFC3339, line.Time)
 
 		if err != nil {

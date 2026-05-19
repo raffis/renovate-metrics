@@ -2,18 +2,25 @@ package parser
 
 import "encoding/json"
 
+const (
+	RepositoryFinishedMessage = "Repository finished"
+	PackageFileUpdatesMessage = "packageFiles with updates"
+	BranchesInfoMessage       = "branches info extended"
+)
+
 type logLine struct {
-	Name              string                          `json:"name,omitempty"`
-	Hostname          string                          `json:"hostname,omitempty"`
-	PID               int                             `json:"pid,omitempty"`
-	Level             int                             `json:"level,omitempty"`
-	Message           string                          `json:"msg,omitempty"`
-	LogContext        string                          `json:"logContext,omitempty"`
-	Time              string                          `json:"time,omitempty"`
-	Repository        string                          `json:"repository,omitempty"`
-	BaseBranch        string                          `json:"baseBranch,omitempty"`
-	Config            *map[string][]packageDependency `json:"config,omitempty"`
-	AlertPackageRules []alertPackageRule              `json:"alertPackageRules,omitempty"`
+	Name                string                          `json:"name,omitempty"`
+	Hostname            string                          `json:"hostname,omitempty"`
+	PID                 int                             `json:"pid,omitempty"`
+	Level               int                             `json:"level,omitempty"`
+	Message             string                          `json:"msg,omitempty"`
+	LogContext          string                          `json:"logContext,omitempty"`
+	Time                string                          `json:"time,omitempty"`
+	Repository          string                          `json:"repository,omitempty"`
+	BaseBranch          string                          `json:"baseBranch,omitempty"`
+	Config              *map[string][]packageDependency `json:"config,omitempty"`
+	AlertPackageRules   []alertPackageRule              `json:"alertPackageRules,omitempty"`
+	BranchesInformation []branchInformation             `json:"branchesInformation,omitempty"`
 }
 
 type alertPackageRule struct {
@@ -59,6 +66,13 @@ type update struct {
 	UpdateType       string `json:"updateType,omitempty"`
 	NewDigest        string `json:"newDigest,omitempty"`
 	BranchName       string `json:"branchName,omitempty"`
+}
+
+type branchInformation struct {
+	BranchName string `json:"branchName"`
+	PrNo       *int   `json:"prNo"`
+	PrTitle    string `json:"prTitle"`
+	Result     string `json:"result"`
 }
 
 type boolString string
