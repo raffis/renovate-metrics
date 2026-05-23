@@ -3,10 +3,12 @@ package parser
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"encoding/json"
 	"io"
 
 	"github.com/go-logr/logr"
+	"github.com/raffis/renovate-metrics/pkg/backend"
 )
 
 type parser struct {
@@ -28,46 +30,52 @@ func NewParser(r io.Reader, opts ParserOptions) *parser {
 	}
 }
 
-type Repository struct {
-	*repository
-	Name string
-}
-
-func (p *parser) Parse() (map[string]*repository, error) {
+func (p *parser) Parse(ctx context.Context, b backend.Backend) error {
 	scanner := bufio.NewScanner(p.r)
 
-	var b []byte
-	scanner.Buffer(b, p.opts.BufferSize)
+	var buf []byte
+	scanner.Buffer(buf, p.opts.BufferSize)
+
 	for scanner.Scan() {
-		var line logLine
 		rawLine := scanner.Bytes()
-		if !bytes.Contains(rawLine, []byte(PackageFileUpdatesMessage)) && !bytes.Contains(rawLine, []byte(RepositoryFinishedMessage)) && !bytes.Contains(rawLine, []byte(BranchesInfoMessage)) {
+		if !bytes.Contains(rawLine, []byte(PackageFileUpdatesMessage)) &&
+			!bytes.Contains(rawLine, []byte(RepositoryFinishedMessage)) &&
+			!bytes.Contains(rawLine, []byte(BranchesInfoMessage)) {
 			continue
 		}
 
-		err := json.Unmarshal(rawLine, &line)
-		if err == nil {
-			if line.Repository == "" {
-				continue
-			}
+		var line logLine
+		if err := json.Unmarshal(rawLine, &line); err != nil {
+			p.opts.Logger.V(1).Info("failed to decode json line", "error", err)
+			continue
+		}
+		if line.Repository == "" {
+			continue
+		}
 
-			repository := p.repository(line.Repository)
-			if err := repository.Parse(line); err != nil {
-				p.opts.Logger.V(1).Info("failed to parse line", "error", err)
-			}
-		} else {
-			p.opts.Logger.V(1).Info("failed to decode json line", "error", err, "line", line)
+		repo := p.repo(line.Repository)
+		if err := repo.parse(line); err != nil {
+			p.opts.Logger.V(1).Info("failed to parse line", "error", err)
 		}
 	}
 
-	return p.repositories, scanner.Err()
-}
-
-func (p *parser) repository(repository string) *repository {
-	if collector, has := p.repositories[repository]; has {
-		return collector
+	if err := scanner.Err(); err != nil {
+		return err
 	}
 
-	p.repositories[repository] = NewRepository(repository)
-	return p.repositories[repository]
+	for _, repo := range p.repositories {
+		if err := repo.flush(ctx, b); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (p *parser) repo(name string) *repository {
+	if r, has := p.repositories[name]; has {
+		return r
+	}
+	r := newRepository(name)
+	p.repositories[name] = r
+	return r
 }

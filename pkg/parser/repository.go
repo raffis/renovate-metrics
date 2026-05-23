@@ -1,21 +1,20 @@
 package parser
 
 import (
-	"regexp"
-	"strconv"
+	"context"
 	"time"
 
-	"github.com/prometheus/client_golang/prometheus"
+	"github.com/raffis/renovate-metrics/pkg/backend"
 )
 
 type repository struct {
-	branchMetric            *prometheus.GaugeVec
-	dependencyMetric        *prometheus.GaugeVec
-	dependencyUpdateMetric  *prometheus.GaugeVec
-	lastSuccessfulRunMetric prometheus.Gauge
-	branchInformation       map[branchInformation]prometheus.Gauge
-	packageDefinitions      map[packageDefinition]prometheus.Gauge
-	packageUpdates          map[packageUpdate]prometheus.Gauge
+	name         string
+	branchInfos  map[branchInformation]backend.BranchInfo
+	dependencies map[packageDefinition]int
+	depDefs      map[packageDefinition]backend.Dependency
+	updates      map[packageUpdateKey]int
+	updateDefs   map[packageUpdateKey]backend.DependencyUpdate
+	lastTs       float64
 }
 
 type packageDefinition struct {
@@ -30,201 +29,163 @@ type packageDefinition struct {
 	IsAbandoned    string
 }
 
-type packageUpdate struct {
+type packageUpdateKey struct {
 	packageDefinition
-	update
+	UpdateType       string
+	NewVersion       string
+	ReleaseTimestamp string
 }
 
-func NewRepository(repo string) *repository {
-
-	branchMetric := prometheus.NewGaugeVec(prometheus.GaugeOpts{
-		Namespace: "renovate",
-		Name:      "branch",
-		Help:      "Branch information",
-	}, []string{"branch", "result"})
-	dependencyMetric := prometheus.NewGaugeVec(prometheus.GaugeOpts{
-		Namespace: "renovate",
-		Name:      "dependency",
-		Help:      "Installed dependency",
-	}, []string{"manager", "packageFile", "depName", "packageName", "depType", "currentVersion", "warning", "baseBranch", "isAbandoned"})
-
-	dependencyUpdateMetric := prometheus.NewGaugeVec(prometheus.GaugeOpts{
-		Namespace: "renovate",
-		Name:      "dependency_update",
-		Help:      "Available update of an installed dependency",
-	}, []string{"manager", "packageFile", "depName", "packageName", "depType", "currentVersion", "updateType", "newVersion", "vulnerabilityFix", "releaseTimestamp", "baseBranch", "isAbandoned"})
-
-	lastSuccessfulRunMetric := prometheus.NewGauge(prometheus.GaugeOpts{
-		Namespace: "renovate",
-		Name:      "last_successful_timestamp",
-		Help:      "Timestamp of the last successful execution",
-	})
-
+func newRepository(name string) *repository {
 	return &repository{
-		branchMetric:            branchMetric,
-		dependencyMetric:        dependencyMetric,
-		dependencyUpdateMetric:  dependencyUpdateMetric,
-		lastSuccessfulRunMetric: lastSuccessfulRunMetric,
-		branchInformation:       make(map[branchInformation]prometheus.Gauge),
-		packageDefinitions:      make(map[packageDefinition]prometheus.Gauge),
-		packageUpdates:          make(map[packageUpdate]prometheus.Gauge),
+		name:         name,
+		branchInfos:  make(map[branchInformation]backend.BranchInfo),
+		dependencies: make(map[packageDefinition]int),
+		depDefs:      make(map[packageDefinition]backend.Dependency),
+		updates:      make(map[packageUpdateKey]int),
+		updateDefs:   make(map[packageUpdateKey]backend.DependencyUpdate),
 	}
 }
 
-func (p *repository) Describe(ch chan<- *prometheus.Desc) {
-	prometheus.DescribeByCollect(p, ch)
-}
-
-func (p *repository) Collect(ch chan<- prometheus.Metric) {
-	ch <- p.lastSuccessfulRunMetric
-
-	for _, m := range p.branchInformation {
-		ch <- m
+func (r *repository) flush(ctx context.Context, b backend.Backend) error {
+	for _, bi := range r.branchInfos {
+		if err := b.RecordBranchInfo(ctx, bi); err != nil {
+			return err
+		}
 	}
-
-	for _, m := range p.packageDefinitions {
-		ch <- m
-	}
-
-	for _, m := range p.packageUpdates {
-		ch <- m
-	}
-}
-
-func (p *repository) branchInfo(metric *prometheus.GaugeVec, definition branchInformation) prometheus.Gauge {
-	prNo := 0
-	if definition.PrNo != nil {
-		prNo = *definition.PrNo
-	}
-	m := metric.With(prometheus.Labels{
-		"branch": definition.BranchName,
-		"result": definition.Result,
-	})
-
-	m.Set(float64(prNo))
-	p.branchInformation[definition] = m
-	return m
-}
-
-func (p *repository) packageDefinition(metric *prometheus.GaugeVec, definition packageDefinition) prometheus.Gauge {
-	if m, has := p.packageDefinitions[definition]; has {
-		m.Inc()
-		return m
-	}
-
-	m := metric.With(prometheus.Labels{
-		"manager":        definition.Manager,
-		"packageFile":    definition.PackageFile,
-		"depName":        definition.DependencyName,
-		"packageName":    definition.PackageName,
-		"depType":        definition.DependencyType,
-		"currentVersion": definition.CurrentVersion,
-		"warning":        definition.WarningMessage,
-		"baseBranch":     definition.BaseBranch,
-		"isAbandoned":    definition.IsAbandoned,
-	})
-
-	m.Set(1)
-	p.packageDefinitions[definition] = m
-
-	return m
-}
-
-func (p *repository) packageUpdate(metric *prometheus.GaugeVec, update packageUpdate) prometheus.Gauge {
-	// There may be different updates for the same package in separate branches. We still want only one metric
-	// for it, so we reset the branch name here prior to the lookup in p.packageUpdates.
-	// Without this prometheus/client_golang will panic because of duplicate metrics.
-	branchName := update.BranchName
-	update.BranchName = ""
-
-	if m, has := p.packageUpdates[update]; has {
-		m.Inc()
-		return m
-	}
-
-	isVulnerabilityUpdate, _ := regexp.MatchString(`-vulnerability$`, branchName)
-	ts, err := time.Parse(time.RFC3339, update.ReleaseTimestamp)
-	if err != nil {
-		ts = time.Unix(0, 0)
-	}
-
-	m := metric.With(prometheus.Labels{
-		"manager":          update.Manager,
-		"packageFile":      update.PackageFile,
-		"depName":          update.DependencyName,
-		"packageName":      update.PackageName,
-		"currentVersion":   update.CurrentVersion,
-		"depType":          update.DependencyType,
-		"updateType":       update.UpdateType,
-		"newVersion":       update.NewVersion,
-		"vulnerabilityFix": strconv.FormatBool(isVulnerabilityUpdate),
-		"releaseTimestamp": strconv.FormatInt(ts.Unix(), 10),
-		"baseBranch":       update.BaseBranch,
-		"isAbandoned":      update.IsAbandoned,
-	})
-	m.Set(1)
-	p.packageUpdates[update] = m
-
-	return m
-}
-
-func (p *repository) Parse(line logLine) error {
-	switch {
-	case line.BranchesInformation != nil:
-		for _, branchInfo := range line.BranchesInformation {
-			if branchInfo.Result != "" {
-				p.branchInfo(p.branchMetric, branchInfo)
+	for key, count := range r.dependencies {
+		for range count {
+			if err := b.RecordDependency(ctx, r.depDefs[key]); err != nil {
+				return err
 			}
 		}
+	}
+	for key, count := range r.updates {
+		for range count {
+			if err := b.RecordDependencyUpdate(ctx, r.updateDefs[key]); err != nil {
+				return err
+			}
+		}
+	}
+	if r.lastTs > 0 {
+		if err := b.RecordLastSuccessfulTimestamp(ctx, r.name, r.lastTs); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (r *repository) recordBranchInfo(info branchInformation) {
+	prNo := 0
+	if info.PrNo != nil {
+		prNo = *info.PrNo
+	}
+	r.branchInfos[info] = backend.BranchInfo{
+		Repository: r.name,
+		Branch:     info.BranchName,
+		Result:     info.Result,
+		PrNo:       prNo,
+	}
+}
+
+func (r *repository) recordDependency(def packageDefinition) {
+	if _, has := r.dependencies[def]; has {
+		r.dependencies[def]++
+		return
+	}
+	r.dependencies[def] = 1
+	r.depDefs[def] = backend.Dependency{
+		Repository:     r.name,
+		Manager:        def.Manager,
+		PackageFile:    def.PackageFile,
+		DepName:        def.DependencyName,
+		PackageName:    def.PackageName,
+		DepType:        def.DependencyType,
+		CurrentVersion: def.CurrentVersion,
+		Warning:        def.WarningMessage,
+		BaseBranch:     def.BaseBranch,
+		IsAbandoned:    def.IsAbandoned,
+	}
+}
+
+func (r *repository) recordUpdate(def packageDefinition, u update) {
+	// BranchName excluded from key — same package can appear in multiple branches
+	// (e.g. security back-ports), but we only want one metric per update.
+	key := packageUpdateKey{
+		packageDefinition: def,
+		UpdateType:        u.UpdateType,
+		NewVersion:        u.NewVersion,
+		ReleaseTimestamp:  u.ReleaseTimestamp,
+	}
+	if _, has := r.updates[key]; has {
+		r.updates[key]++
+		return
+	}
+	r.updates[key] = 1
+	r.updateDefs[key] = backend.DependencyUpdate{
+		Dependency: backend.Dependency{
+			Repository:     r.name,
+			Manager:        def.Manager,
+			PackageFile:    def.PackageFile,
+			DepName:        def.DependencyName,
+			PackageName:    def.PackageName,
+			DepType:        def.DependencyType,
+			CurrentVersion: def.CurrentVersion,
+			BaseBranch:     def.BaseBranch,
+			IsAbandoned:    def.IsAbandoned,
+		},
+		BranchName:       u.BranchName,
+		UpdateType:       u.UpdateType,
+		NewVersion:       u.NewVersion,
+		ReleaseTimestamp: u.ReleaseTimestamp,
+	}
+}
+
+func (r *repository) parse(line logLine) error {
+	switch {
+	case line.BranchesInformation != nil:
+		for _, bi := range line.BranchesInformation {
+			if bi.Result != "" {
+				r.recordBranchInfo(bi)
+			}
+		}
+
 	case line.Config != nil:
 		for manager, files := range *line.Config {
-			for _, packageDependency := range files {
-				for _, dep := range packageDependency.Deps {
-					warningMessage := ""
+			for _, packageDep := range files {
+				for _, dep := range packageDep.Deps {
+					warningMsg := ""
 					for _, w := range dep.Warnings {
 						if w.Topic == dep.DepName {
-							warningMessage = w.Message
+							warningMsg = w.Message
 							break
 						}
 					}
-					p.packageDefinition(p.dependencyMetric, packageDefinition{
+					def := packageDefinition{
 						DependencyName: dep.DepName,
 						CurrentVersion: dep.CurrentValue,
 						DependencyType: dep.DepType,
 						Manager:        manager,
-						PackageFile:    packageDependency.PackageFile,
+						PackageFile:    packageDep.PackageFile,
 						PackageName:    dep.PackageName,
-						WarningMessage: warningMessage,
+						WarningMessage: warningMsg,
 						BaseBranch:     line.BaseBranch,
 						IsAbandoned:    string(dep.IsAbandoned),
-					})
-
-					for _, update := range dep.Updates {
-						p.packageUpdate(p.dependencyUpdateMetric, packageUpdate{
-							packageDefinition: packageDefinition{
-								DependencyName: dep.DepName,
-								DependencyType: dep.DepType,
-								CurrentVersion: dep.CurrentValue,
-								Manager:        manager,
-								PackageFile:    packageDependency.PackageFile,
-								PackageName:    dep.PackageName,
-								BaseBranch:     line.BaseBranch,
-								IsAbandoned:    string(dep.IsAbandoned),
-							},
-							update: update,
-						})
+					}
+					r.recordDependency(def)
+					for _, u := range dep.Updates {
+						r.recordUpdate(def, u)
 					}
 				}
 			}
 		}
+
 	case line.Message == RepositoryFinishedMessage:
 		ts, err := time.Parse(time.RFC3339, line.Time)
-
 		if err != nil {
 			return err
 		}
-
-		p.lastSuccessfulRunMetric.Set(float64(ts.Unix()))
+		r.lastTs = float64(ts.Unix())
 	}
 
 	return nil
