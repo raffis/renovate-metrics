@@ -5,16 +5,18 @@ import (
 	"os"
 
 	"github.com/go-logr/stdr"
-	"github.com/prometheus/client_golang/prometheus/push"
+	"github.com/raffis/renovate-metrics/pkg/backend"
 	"github.com/raffis/renovate-metrics/pkg/parser"
 	"github.com/spf13/cobra"
 )
 
 var (
-	prometheusArg = "http://localhost:9091"
-	job           = "renovate"
-	bufferSize    = 10485760
-	logLevel      = 0
+	prometheusArg    = "http://localhost:9091"
+	job              = "renovate"
+	bufferSize       = 10485760
+	logLevel         = 0
+	otlpEndpoint     = ""
+	otlpGRPCEndpoint = ""
 )
 
 func newStdLogger(flags int) stdr.StdLogger {
@@ -34,7 +36,6 @@ func init() {
 				if err != nil {
 					return err
 				}
-
 				defer func() { _ = f.Close() }()
 				file = f
 			}
@@ -42,31 +43,35 @@ func init() {
 			log := stdr.New(newStdLogger(log.Lshortfile))
 			stdr.SetVerbosity(logLevel)
 
-			parser := parser.NewParser(file, parser.ParserOptions{
+			var b backend.Backend
+			switch {
+			case otlpEndpoint != "":
+				be, err := backend.NewOTELBackend(cmd.Context(), otlpEndpoint, "http")
+				if err != nil {
+					return err
+				}
+				b = be
+			case otlpGRPCEndpoint != "":
+				be, err := backend.NewOTELBackend(cmd.Context(), otlpGRPCEndpoint, "grpc")
+				if err != nil {
+					return err
+				}
+				b = be
+			default:
+				b = backend.NewPrometheusBackend(prometheusArg, job)
+			}
+			defer func() { _ = b.Shutdown(cmd.Context()) }()
+
+			p := parser.NewParser(file, parser.ParserOptions{
 				BufferSize: bufferSize,
 				Logger:     log,
 			})
 
-			collectors, err := parser.Parse()
-			if err != nil {
+			if err := p.Parse(cmd.Context(), b); err != nil {
 				return err
 			}
 
-			for repository, collector := range collectors {
-				// Note: Client can't be reused, as there is no way to unregister a Collector from a Pusher.
-				client := push.New(prometheusArg, job)
-				client.Grouping("repository", repository)
-
-				if err := client.Delete(); err != nil {
-					return err
-				}
-
-				if err := client.Collector(collector).Push(); err != nil {
-					return err
-				}
-			}
-
-			return err
+			return b.Flush(cmd.Context())
 		},
 	}
 
@@ -74,5 +79,7 @@ func init() {
 	pushCmd.Flags().StringVarP(&job, "job", "", job, "Value of job label used when pushing metrics")
 	pushCmd.Flags().IntVarP(&bufferSize, "buffer-size", "", bufferSize, "Buffer size while parsing input")
 	pushCmd.Flags().IntVarP(&logLevel, "log-level", "", logLevel, "Log Level (Default is 0 which is no logging)")
+	pushCmd.Flags().StringVar(&otlpEndpoint, "otlp-endpoint", otlpEndpoint, "OTLP HTTP endpoint URL (e.g. http://otelcol:4318)")
+	pushCmd.Flags().StringVar(&otlpGRPCEndpoint, "otlp-grpc-endpoint", otlpGRPCEndpoint, "OTLP gRPC endpoint (e.g. otelcol:4317)")
 	rootCmd.AddCommand(pushCmd)
 }
