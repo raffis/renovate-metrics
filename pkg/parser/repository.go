@@ -52,7 +52,7 @@ func NewRepository(repo string) *repository {
 		Namespace: "renovate",
 		Name:      "dependency_update",
 		Help:      "Available update of an installed dependency",
-	}, []string{"manager", "packageFile", "depName", "packageName", "depType", "currentVersion", "updateType", "newVersion", "vulnerabilityFix", "releaseTimestamp", "baseBranch", "isAbandoned"})
+	}, []string{"manager", "packageFile", "depName", "packageName", "depType", "currentVersion", "updateType", "newVersion", "vulnerabilityFix", "releaseTimestamp", "baseBranch", "isAbandoned", "pending"})
 
 	lastSuccessfulRunMetric := prometheus.NewGauge(prometheus.GaugeOpts{
 		Namespace: "renovate",
@@ -161,6 +161,7 @@ func (p *repository) packageUpdate(metric *prometheus.GaugeVec, update packageUp
 		"releaseTimestamp": strconv.FormatInt(ts.Unix(), 10),
 		"baseBranch":       update.BaseBranch,
 		"isAbandoned":      update.IsAbandoned,
+		"pending":          strconv.FormatBool(update.PendingChecks),
 	})
 	m.Set(1)
 	p.packageUpdates[update] = m

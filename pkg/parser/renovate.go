@@ -61,6 +61,7 @@ type update struct {
 	NewVersion       string `json:"newVersion,omitempty"`
 	NewValue         string `json:"newValue,omitempty"`
 	ReleaseTimestamp string `json:"releaseTimestamp,omitempty"`
+	PendingChecks    bool   `json:"pendingChecks,omitempty"`
 	NewMajor         int    `json:"newMajor,omitempty"`
 	NewMinor         int    `json:"newMinor,omitempty"`
 	UpdateType       string `json:"updateType,omitempty"`

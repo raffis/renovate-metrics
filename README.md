@@ -20,7 +20,7 @@ This is possible if renovate runs in self-hosted environments.
 `renovate_dependency` labels: "repository", "manager", "packageFile", "depName", "currentVersion", "warning", "baseBranch"
    
 * Available update of an installed dependency \
-`renovate_dependency_update` labels: "repository", "manager", "packageFile", "depName", "currentVersion", "updateType", "newVersion", "vulnerabilityFix", "releaseTimestamp", "baseBranch"
+`renovate_dependency_update` labels: "repository", "manager", "packageFile", "depName", "currentVersion", "updateType", "newVersion", "vulnerabilityFix", "releaseTimestamp", "baseBranch", "pending"
    
 * Timestamp of the last successful execution \
 `renovate_last_successful_timestamp` labels: "repository"
