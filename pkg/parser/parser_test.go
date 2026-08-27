@@ -36,11 +36,11 @@ func TestParseHandlesOversizedLine(t *testing.T) {
 
 	repos, err := p.Parse()
 	if err != nil {
-		t.Fatalf("Parse returned an error on an oversized line: %v", err)
+		t.Fatalf("Parse() error = %v, want nil", err)
 	}
 
 	if _, ok := repos["org/small"]; !ok {
-		t.Fatalf("line after the oversized line was not parsed; got repos %v", keys(repos))
+		t.Fatalf("Parse() repos = %v, want to contain %q (line after the oversized line)", keys(repos), "org/small")
 	}
 }
 
@@ -55,10 +55,10 @@ func TestParseFinalLineWithoutTrailingNewline(t *testing.T) {
 
 	repos, err := p.Parse()
 	if err != nil {
-		t.Fatalf("Parse returned an error: %v", err)
+		t.Fatalf("Parse() error = %v, want nil", err)
 	}
 
 	if _, ok := repos["org/only"]; !ok {
-		t.Fatalf("final line without a trailing newline was not parsed; got repos %v", keys(repos))
+		t.Fatalf("Parse() repos = %v, want to contain %q (final line without a trailing newline)", keys(repos), "org/only")
 	}
 }
