@@ -34,33 +34,48 @@ type Repository struct {
 }
 
 func (p *parser) Parse() (map[string]*repository, error) {
-	scanner := bufio.NewScanner(p.r)
+	// Renovate can emit a single JSON log line larger than any fixed token size -- a
+	// repository that matches hundreds of files dumps a multi-megabyte debug line. The
+	// bufio.Scanner used here capped a line at BufferSize and returned bufio.ErrTooLong
+	// once a line exceeded it; that error propagates through push's RunE and
+	// rootCmd.Execute() to main(), which panic()s. The panic kills the process
+	// mid-stream, and when renovate-metrics is piped from a live `renovate` process it
+	// also closes the pipe and takes Renovate down with a broken pipe (EPIPE).
+	//
+	// bufio.Reader.ReadBytes has no such cap: it grows as needed and always drains to
+	// EOF, so an oversized line is handled (or skipped) rather than being fatal, and the
+	// stream is fully consumed either way.
+	reader := bufio.NewReaderSize(p.r, p.opts.BufferSize)
 
-	var b []byte
-	scanner.Buffer(b, p.opts.BufferSize)
-	for scanner.Scan() {
-		var line logLine
-		rawLine := scanner.Bytes()
-		if !bytes.Contains(rawLine, []byte(PackageFileUpdatesMessage)) && !bytes.Contains(rawLine, []byte(RepositoryFinishedMessage)) && !bytes.Contains(rawLine, []byte(BranchesInfoMessage)) {
-			continue
+	for {
+		rawLine, readErr := reader.ReadBytes('\n')
+
+		if len(rawLine) > 0 &&
+			(bytes.Contains(rawLine, []byte(PackageFileUpdatesMessage)) ||
+				bytes.Contains(rawLine, []byte(RepositoryFinishedMessage)) ||
+				bytes.Contains(rawLine, []byte(BranchesInfoMessage))) {
+			var line logLine
+			err := json.Unmarshal(rawLine, &line)
+			if err == nil {
+				if line.Repository != "" {
+					repository := p.repository(line.Repository)
+					if err := repository.Parse(line); err != nil {
+						p.opts.Logger.V(1).Info("failed to parse line", "error", err)
+					}
+				}
+			} else {
+				p.opts.Logger.V(1).Info("failed to decode json line", "error", err, "line", line)
+			}
 		}
 
-		err := json.Unmarshal(rawLine, &line)
-		if err == nil {
-			if line.Repository == "" {
-				continue
+		if readErr != nil {
+			if readErr == io.EOF {
+				return p.repositories, nil
 			}
 
-			repository := p.repository(line.Repository)
-			if err := repository.Parse(line); err != nil {
-				p.opts.Logger.V(1).Info("failed to parse line", "error", err)
-			}
-		} else {
-			p.opts.Logger.V(1).Info("failed to decode json line", "error", err, "line", line)
+			return p.repositories, readErr
 		}
 	}
-
-	return p.repositories, scanner.Err()
 }
 
 func (p *parser) repository(repository string) *repository {
