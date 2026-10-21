@@ -34,17 +34,6 @@ type Repository struct {
 }
 
 func (p *parser) Parse() (map[string]*repository, error) {
-	// Renovate can emit a single JSON log line larger than any fixed token size -- a
-	// repository that matches hundreds of files dumps a multi-megabyte debug line. The
-	// bufio.Scanner used here capped a line at BufferSize and returned bufio.ErrTooLong
-	// once a line exceeded it; that error propagates through push's RunE and
-	// rootCmd.Execute() to main(), which panic()s. The panic kills the process
-	// mid-stream, and when renovate-metrics is piped from a live `renovate` process it
-	// also closes the pipe and takes Renovate down with a broken pipe (EPIPE).
-	//
-	// bufio.Reader.ReadBytes has no such cap: it grows as needed and always drains to
-	// EOF, so an oversized line is handled (or skipped) rather than being fatal, and the
-	// stream is fully consumed either way.
 	reader := bufio.NewReaderSize(p.r, p.opts.BufferSize)
 
 	for {

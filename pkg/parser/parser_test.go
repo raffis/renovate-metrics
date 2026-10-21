@@ -16,11 +16,6 @@ func keys(m map[string]*repository) []string {
 	return out
 }
 
-// Renovate can emit a single JSON log line larger than any fixed buffer size: a
-// repository that matches hundreds of files dumps a multi-megabyte debug line. Parsing
-// such a line must not error or panic, and parsing must continue with the lines that
-// follow it. Previously bufio.Scanner returned bufio.ErrTooLong here, which panicked the
-// whole process (cmd/main.go).
 func TestParseHandlesOversizedLine(t *testing.T) {
 	// A huge debug line that does not match any of the parsed message types (so it is
 	// skipped), far larger than the deliberately tiny BufferSize below.
